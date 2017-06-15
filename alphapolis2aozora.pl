@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# last updated : 2017/06/15 20:39:45 JST
+# last updated : 2017/06/15 20:58:06 JST
 #
 # アルファポリスの投稿小節を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -81,6 +81,7 @@ sub honbun {
   $item =~  s|<br />||g;
   $item =~  s|&nbsp;| |g;
   $item =~  s| +||; # 一行目の空白を削除。
+  $item =~  s|<ruby>(.+)<rt>(.+)</rt></ruby>|｜$1《$2》|g;
   return $item;
 }
 
