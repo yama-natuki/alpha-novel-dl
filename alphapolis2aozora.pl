@@ -1,6 +1,7 @@
 #!/usr/bin/perl
-# last updated : 2017/06/15 19:47:00 JST
+# last updated : 2017/06/15 19:58:17 JST
 #
+# アルファポリスの投稿小節を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
 # license GPLv2
 #
