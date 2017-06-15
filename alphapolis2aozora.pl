@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# last updated : 2017/06/15 20:58:06 JST
+# last updated : 2017/06/15 21:15:01 JST
 #
 # アルファポリスの投稿小節を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -81,7 +81,10 @@ sub honbun {
   $item =~  s|<br />||g;
   $item =~  s|&nbsp;| |g;
   $item =~  s| +||; # 一行目の空白を削除。
-  $item =~  s|<ruby>(.+)<rt>(.+)</rt></ruby>|｜$1《$2》|g;
+  $item =~  s|<ruby>(.+?)<rt>(.+?)</rt></ruby>|｜$1《$2》|g;
+  $item =~  s|<div class="story_image"><a .+<img src="(.+)"></a></div>|$1|g; # 暫定処理
+  $item =~  s|<em>(.+)</em>|［＃傍線］$1［＃傍線終わり］|g;
+  $item =~  s|</?span>||g;
   return $item;
 }
 
