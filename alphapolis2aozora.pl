@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# last updated : 2017/06/15 20:18:55 JST
+# last updated : 2017/06/15 20:39:45 JST
 #
 # アルファポリスの投稿小節を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -104,6 +104,7 @@ sub get_all {
 {
   if (@ARGV == 1) {
 	if ($ARGV[0] =~ m|http?://www.alphapolis.co.jp/content/cover/|) {
+	  $url = $ARGV[0];
 	  my $body = &get_contents( $url );
 	  &get_index( $body ); # 目次作成
 	  print &header( $body );
