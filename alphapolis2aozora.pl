@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# last updated : 2017/06/15 20:00:11 JST
+# last updated : 2017/06/15 20:18:55 JST
 #
 # アルファポリスの投稿小節を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -17,7 +17,7 @@ binmode STDOUT, ":utf8";
 binmode STDERR, ":utf8";
 use Encode;
 
-my $url = "http://www.alphapolis.co.jp/content/cover/424081493/";
+my $url;
 my $user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0';
 my @url_list = (); # url list
 my $separator = "▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼\n";
@@ -102,8 +102,19 @@ sub get_all {
 
 #main
 {
-  my $body = &get_contents( $url );
-  &get_index( $body ); # 目次作成
-  print &header( $body );
-  &get_all( \@url_list);
+  if (@ARGV == 1) {
+	if ($ARGV[0] =~ m|http?://www.alphapolis.co.jp/content/cover/|) {
+	  my $body = &get_contents( $url );
+	  &get_index( $body ); # 目次作成
+	  print &header( $body );
+	  &get_all( \@url_list);
+	} elsif  ($ARGV[0] =~ m|http?://www.alphapolis.co.jp/content/sentence/|) {
+	  print "個別ページダウンロード未対応\n";
+	}
+  } else {
+	print "アルファポリス投稿小説ダウンローダ\n\n";
+	print "Usage:\n";
+	print "./alphapols2aozora.pl URL\n";
+	print "目次ページを指定してください\n";
+  }
 }
