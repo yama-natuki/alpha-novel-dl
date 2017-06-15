@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# last updated : 2017/06/15 19:58:17 JST
+# last updated : 2017/06/15 20:00:11 JST
 #
 # アルファポリスの投稿小節を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -16,7 +16,6 @@ use utf8;
 binmode STDOUT, ":utf8";
 binmode STDERR, ":utf8";
 use Encode;
-use Perl6::Slurp; # http://d.hatena.ne.jp/minesouta/20071204/p1
 
 my $url = "http://www.alphapolis.co.jp/content/cover/424081493/";
 my $user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0';
@@ -25,7 +24,7 @@ my $separator = "▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲
 my $kaipage = "［＃改ページ］\n";
 my $contents;
 my ($main_title, $author );
-  
+
 sub get_contents {
   my $address = shift;
   my $http = LWP::UserAgent->new;
@@ -56,7 +55,6 @@ sub get_index {
 	$title = Encode::decode('EUC-JP', $title);
 	utf8::decode($title);
 	push(@url_list, [$title, $url]); # タイトル,url二組で格納。
-	#  print $title . " :: " . $url . "\n";
   }
 }
 
@@ -71,8 +69,6 @@ sub header {
   $author =  Encode::decode('EUC-JP', $author);
   utf8::decode($main_title);
   utf8::decode($author);
-#  print $main_title .  "\n";
-#  print $author . "\n";
   return sprintf("%s", $main_title . "\n" . $author . "\n\n\n");
 }
 
@@ -82,7 +78,6 @@ sub honbun {
   utf8::decode($item);
   $item =~ m|.*<div class="text ">(.+)</div>.+<a class="bookmark bookmark_bottom .+|s;
   $item = $1;
-#  $item =~  s|<br />\n<br />|<br />|sg;
   $item =~  s|<br />||g;
   $item =~  s|&nbsp;| |g;
   $item =~  s| +||; # 一行目の空白を削除。
@@ -93,7 +88,6 @@ sub get_all {
   my $index = shift;
   my $count = @$index;
   for ( my $i = 0; $i < $count; $i++) {
-#	print scalar( @$index[$i]->[1] ) . "\n";
 	my $x = &get_contents( scalar(@$index[$i]->[1]) );
 	$x = &honbun( $x );
 	my $title = scalar(@$index[$i]->[0]);
@@ -108,24 +102,8 @@ sub get_all {
 
 #main
 {
-#my $body = &get_contents( $url );
-my $body = slurp('/tmp/test.html');
-&get_index( $body ); # 目次作成
-# debug print
- # my $length = $#url_list;
- # for (my $i =0; $i < $length; $i++) {
- #   print $url_list[$i]->[0] . " :: " . $url_list[$i]->[1] . "\n";
- # }
-
-print &header( $body );
-
-&get_all( \@url_list);
-
- 
-
-#本文取得テスト
-#  my $book = slurp('/tmp/p01.html');
-#  print &honbun( $book );
-
-
+  my $body = &get_contents( $url );
+  &get_index( $body ); # 目次作成
+  print &header( $body );
+  &get_all( \@url_list);
 }
