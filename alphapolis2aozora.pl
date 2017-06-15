@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# last updated : 2017/06/15 21:21:24 JST
+# last updated : 2017/06/15 22:31:31 JST
 #
 # アルファポリスの投稿小節を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -16,6 +16,7 @@ use utf8;
 binmode STDOUT, ":utf8";
 binmode STDERR, ":utf8";
 use Encode;
+use File::Basename;
 
 my $url;
 my $user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0';
@@ -82,10 +83,30 @@ sub honbun {
   $item =~  s|&nbsp;| |g;
   $item =~  s| +||; # 一行目の空白を削除。
   $item =~  s|<ruby>(.+?)<rt>(.+?)</rt></ruby>|｜$1《$2》|g;
-  $item =~  s|<div class="story_image"><a .+<img src="(.+)"></a></div>|$1|g; # 暫定処理
-  $item =~  s|<em>(.+)</em>|［＃傍線］$1［＃傍線終わり］|g;
+  $item =~  s|<em>(.+?)</em>|［＃傍線］$1［＃傍線終わり］|g;
   $item =~  s|</?span>||g;
+  if ( $item =~ m|story_image| ) {
+	$item =~  s|<div class="story_image"><a .+<img src="(.+?)"></a></div>|$1|g; # 暫定処理
+#	$item =~  s|<div class="story_image"><a .+<img src="(.+?)"></a></div>|&File::Basename::basename($1)|g; # 暫定処理
+	&get_pic( $1);
+	print STDERR $1 . "\n";
+	#  print STDERR &basename($1) . "\n";
+  }
   return $item;
+}
+
+# 挿絵保存
+sub get_pic {
+  my $address = shift;
+  my $fname = basename( $address );
+  my $http = LWP::UserAgent->new;
+  $http->agent($user_agent);
+  my $res = $http->get( $address, ':content_file' => $fname );
+  if ( $res->is_success ) {
+	print STDERR "success:: $fname\n";
+  } else {
+	print STDERR "error:: $fname\n";
+  }
 }
 
 sub get_all {
@@ -97,7 +118,7 @@ sub get_all {
 	my $title = scalar(@$index[$i]->[0]);
 	print STDERR $title . " ::取得完了\n";
 	my $midasi = "\n［＃中見出し］" . $title . "［＃中見出し終わり］\n\n\n";
-	my $item = $kaipage . $separator . $midasi . $text . "\n" . $separator;
+	my $item = $kaipage . $separator . $midasi . $text . "\n\n" . $separator;
 	print $item;
 	sleep 2;
   }
