@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# last updated : 2017/06/15 21:15:01 JST
+# last updated : 2017/06/15 21:21:24 JST
 #
 # アルファポリスの投稿小節を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -92,12 +92,12 @@ sub get_all {
   my $index = shift;
   my $count = @$index;
   for ( my $i = 0; $i < $count; $i++) {
-	my $x = &get_contents( scalar(@$index[$i]->[1]) );
-	$x = &honbun( $x );
+	my $text = &get_contents( scalar(@$index[$i]->[1]) );
+	$text = &honbun( $text );
 	my $title = scalar(@$index[$i]->[0]);
 	print STDERR $title . " ::取得完了\n";
 	my $midasi = "\n［＃中見出し］" . $title . "［＃中見出し終わり］\n\n\n";
-	my $item = $kaipage . $separator . $midasi . $x . $separator;
+	my $item = $kaipage . $separator . $midasi . $text . "\n" . $separator;
 	print $item;
 	sleep 2;
   }
