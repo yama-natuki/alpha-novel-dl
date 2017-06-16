@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# last updated : 2017/06/16 10:19:12 JST
+# last updated : 2017/06/16 10:33:34 JST
 #
 # アルファポリスの投稿小説を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -27,6 +27,7 @@ my $separator = "▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲
 my $kaipage = "［＃改ページ］\n";
 my $contents;
 my ($main_title, $author );
+my $pic_count = 1;
 my $charcode = 'UTF-8';
 
 if ($^O =~ m/MSWin32/) {
@@ -89,15 +90,19 @@ sub honbun {
   $item =~  s|<em>(.+?)</em>|［＃傍線］$1［＃傍線終わり］|g;
   $item =~  s|</?span>||g;
   if ( $item =~ m|story_image| ) {
-	$item =~  s|<div class="story_image"><a .+<img src="(.+?)"></a></div>|&strip_name($1)|eg;
+	$item =~  s|<div class="story_image"><a .+<img src="(.+?)"></a></div>|&ins_sasie($1)|eg;
 	&get_pic( $1);
   }
   return $item;
 }
 
-sub strip_name {
+#挿絵処理
+sub ins_sasie {
   my $i = shift;
-  return File::Basename::basename( $i ) . "\n";
+  return "［＃挿絵" . sprintf("%03d", $pic_count) . "（" .
+	     File::Basename::basename( $i ) .
+		 "）入る］\n";
+  $pic_count++;
 }
 
 # 挿絵保存
