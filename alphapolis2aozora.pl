@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# last updated : 2017/06/16 10:37:11 JST
+# last updated : 2017/06/16 10:44:56 JST
 #
 # アルファポリスの投稿小説を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -87,7 +87,7 @@ sub honbun {
   $item =~  s|&nbsp;| |g;
   $item =~  s| +||; # 一行目の空白を削除。
   $item =~  s|<ruby>(.+?)<rt>(.+?)</rt></ruby>|｜$1《$2》|g;
-  $item =~  s|<em>(.+?)</em>|［＃丸傍点］$1［＃丸傍点終わり］|g;
+  $item =~  s|<em>(.+?)</em>|［＃傍点］$1［＃傍点終わり］|g;
   $item =~  s|</?span>||g;
   if ( $item =~ m|story_image| ) {
 	$item =~  s|<div class="story_image"><a .+<img src="(.+?)"></a></div>|&ins_sasie($1)|eg;
