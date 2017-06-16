@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# last updated : 2017/06/15 22:31:31 JST
+# last updated : 2017/06/16 09:19:33 JST
 #
 # アルファポリスの投稿小節を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -86,13 +86,15 @@ sub honbun {
   $item =~  s|<em>(.+?)</em>|［＃傍線］$1［＃傍線終わり］|g;
   $item =~  s|</?span>||g;
   if ( $item =~ m|story_image| ) {
-	$item =~  s|<div class="story_image"><a .+<img src="(.+?)"></a></div>|$1|g; # 暫定処理
-#	$item =~  s|<div class="story_image"><a .+<img src="(.+?)"></a></div>|&File::Basename::basename($1)|g; # 暫定処理
+	$item =~  s|<div class="story_image"><a .+<img src="(.+?)"></a></div>|&strip_name($1)|eg;
 	&get_pic( $1);
-	print STDERR $1 . "\n";
-	#  print STDERR &basename($1) . "\n";
   }
   return $item;
+}
+
+sub strip_name {
+  my $i = shift;
+  return File::Basename::basename( $i ) . "\n";
 }
 
 # 挿絵保存
