@@ -1,10 +1,14 @@
 #!/usr/bin/perl
-# last updated : 2017/06/16 09:19:33 JST
+# last updated : 2017/06/16 09:25:34 JST
 #
-# アルファポリスの投稿小節を青空文庫形式にしてダウンロードする。
+# アルファポリスの投稿小説を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
 # license GPLv2
 #
+# Usage.
+# ./alphapolis2aozora.pl 目次url
+# とすれば標準出力に青空形式で出力されます。適当にリダイレクトして保存してください。
+# 挿絵もカレントディレクトリに保存されます。
 #
 
 
@@ -140,6 +144,7 @@ sub get_all {
 	  print "個別ページダウンロード未対応\n";
 	}
   } else {
+	print "./alphapolis2aozora.pl Copyright (c) 2017 ◆.nITGbUipI\n";
 	print "アルファポリス投稿小説ダウンローダ\n\n";
 	print "Usage:\n";
 	print "./alphapols2aozora.pl URL\n";
