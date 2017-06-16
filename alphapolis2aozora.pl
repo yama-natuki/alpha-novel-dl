@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# last updated : 2017/06/16 10:44:56 JST
+# last updated : 2017/06/16 10:52:35 JST
 #
 # アルファポリスの投稿小説を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -96,10 +96,12 @@ sub honbun {
   return $item;
 }
 
-#挿絵処理
+#挿絵リンク処理
 sub ins_sasie {
   my $i = shift;
-  return "［＃挿絵" . sprintf("%03d", $pic_count) . "（" .
+  return "［＃挿絵" .
+	     sprintf("%03d", $pic_count) .
+		 "（" .
 	     File::Basename::basename( $i ) .
 		 "）入る］\n";
   $pic_count++;
