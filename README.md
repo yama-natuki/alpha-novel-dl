@@ -6,6 +6,12 @@ alphapolis2aozora.plとは？
 
 　アルファポリスの投稿小説を青空文庫形式に変換して標準出力に出力するダウンローダ。
 
+### 特徴
+
+- 挿絵対応
+- ルビ対応
+- 傍点対応
+- cp932対応
 
 # 導入方法
 
@@ -13,8 +19,8 @@ alphapolis2aozora.plとは？
 
 ```
     LWP::UserAgent
-    HTML::TreeBuilder;
-    File::Basename;
+    HTML::TreeBuilder
+    File::Basename
 ```
 
 ## インストール
