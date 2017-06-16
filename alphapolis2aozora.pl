@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# last updated : 2017/06/16 09:25:34 JST
+# last updated : 2017/06/16 10:19:12 JST
 #
 # アルファポリスの投稿小説を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -9,16 +9,14 @@
 # ./alphapolis2aozora.pl 目次url
 # とすれば標準出力に青空形式で出力されます。適当にリダイレクトして保存してください。
 # 挿絵もカレントディレクトリに保存されます。
+# utf8 な環境でしかテストしていません。一応WinではShift_JISで出力するようにはしています。
 #
-
 
 use strict;
 use warnings;
 use LWP::UserAgent;
 use HTML::TreeBuilder;
 use utf8;
-binmode STDOUT, ":utf8";
-binmode STDERR, ":utf8";
 use Encode;
 use File::Basename;
 
@@ -29,6 +27,11 @@ my $separator = "▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲
 my $kaipage = "［＃改ページ］\n";
 my $contents;
 my ($main_title, $author );
+my $charcode = 'UTF-8';
+
+if ($^O =~ m/MSWin32/) {
+  $charcode = "cp932";
+}
 
 sub get_contents {
   my $address = shift;
@@ -58,7 +61,6 @@ sub get_index {
 	my $url = $tag->find('a')->attr('href'); # url
 	my $title = $tag->look_down('class', 'title')->as_text; # title
 	$title = Encode::decode('EUC-JP', $title);
-	utf8::decode($title);
 	push(@url_list, [$title, $url]); # タイトル,url二組で格納。
   }
 }
@@ -72,15 +74,12 @@ sub header {
   $author = $item->look_down( 'class', 'author')->find('a')->as_text;
   $main_title =  Encode::decode('EUC-JP', $main_title);
   $author =  Encode::decode('EUC-JP', $author);
-  utf8::decode($main_title);
-  utf8::decode($author);
   return sprintf("%s", $main_title . "\n" . $author . "\n\n\n");
 }
 
 sub honbun {
   my $item = shift;
   $item =  Encode::decode('EUC-JP', $item);
-  utf8::decode($item);
   $item =~ m|.*<div class="text ">(.+)</div>.+<a class="bookmark bookmark_bottom .+|s;
   $item = $1;
   $item =~  s|<br />||g;
@@ -109,9 +108,9 @@ sub get_pic {
   $http->agent($user_agent);
   my $res = $http->get( $address, ':content_file' => $fname );
   if ( $res->is_success ) {
-	print STDERR "success:: $fname\n";
+	print STDERR encode($charcode, "success:: $fname\n");
   } else {
-	print STDERR "error:: $fname\n";
+	print STDERR encode($charcode, "error:: $fname\n");
   }
 }
 
@@ -122,10 +121,10 @@ sub get_all {
 	my $text = &get_contents( scalar(@$index[$i]->[1]) );
 	$text = &honbun( $text );
 	my $title = scalar(@$index[$i]->[0]);
-	print STDERR $title . " ::取得完了\n";
+	print STDERR encode($charcode, $title . " ::取得完了\n");
 	my $midasi = "\n［＃中見出し］" . $title . "［＃中見出し終わり］\n\n\n";
 	my $item = $kaipage . $separator . $midasi . $text . "\n\n" . $separator;
-	print $item;
+	print encode($charcode, $item);
 	sleep 2;
   }
 }
@@ -138,16 +137,18 @@ sub get_all {
 	  $url = $ARGV[0];
 	  my $body = &get_contents( $url );
 	  &get_index( $body ); # 目次作成
-	  print &header( $body );
+	  print encode($charcode, &header( $body ) );
 	  &get_all( \@url_list);
 	} elsif  ($ARGV[0] =~ m|http?://www.alphapolis.co.jp/content/sentence/|) {
-	  print "個別ページダウンロード未対応\n";
+	  print encode($charcode, "個別ページダウンロード未対応\n");
 	}
   } else {
-	print "./alphapolis2aozora.pl Copyright (c) 2017 ◆.nITGbUipI\n";
-	print "アルファポリス投稿小説ダウンローダ\n\n";
-	print "Usage:\n";
-	print "./alphapols2aozora.pl URL\n";
-	print "目次ページを指定してください\n";
+	print encode($charcode,
+				 "./alphapolis2aozora.pl  (c) 2017 ◆.nITGbUipI\n" .
+				 "アルファポリス投稿小説ダウンローダ\n\n" .
+				 "Usage:\n" .
+				 "./alphapols2aozora.pl URL\n" .
+				 "目次ページを指定してください\n"
+				 );
   }
 }
