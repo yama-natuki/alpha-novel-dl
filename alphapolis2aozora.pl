@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# last updated : 2017/06/21 21:36:51 JST
+# last updated : 2017/06/21 22:12:12 JST
 #
 # アルファポリスの投稿小説を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -177,7 +177,6 @@ sub get_all {
 	          $midasi . $text . "\n\n" . $separator;
 	}
 	print encode($charcode, $item);
-	sleep 2;
   }
 }
 
