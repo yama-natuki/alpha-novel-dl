@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# last updated : 2017/06/21 17:13:27 JST
+# last updated : 2017/06/21 21:20:30 JST
 #
 # アルファポリスの投稿小説を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -71,15 +71,20 @@ sub html2tree {
 # 目次作成
 sub get_index {
   my $item = shift;
+  my $count = 0;
   $item = &html2tree($item);
-  my $mokuji = $item->look_down('class', 'table-of-contents novels');
-  $mokuji = $mokuji->look_down('class', "episodes");
+  my $mokuji = $item->look_down('class', 'table-of-contents novels')->look_down('class', "episodes");
   foreach my $tag ($mokuji->find('div')) {
 	my $url = $tag->find('a')->attr('href'); # url
 	my $title = $tag->look_down('class', 'title')->as_text; # title
 	utf8::decode($title);
 	$url = $url_prefix . $url;
-	push(@url_list, [$title, $url]); # タイトル,url二組で格納。
+	if ($count == 0) {
+	  $count++
+	}
+	else {
+	  push(@url_list, [$title, $url]); # タイトル,url二組で格納。
+	}
   }
 }
 
