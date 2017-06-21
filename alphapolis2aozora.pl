@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# last updated : 2017/06/21 21:28:10 JST
+# last updated : 2017/06/21 21:36:51 JST
 #
 # アルファポリスの投稿小説を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -194,6 +194,11 @@ sub get_all {
 	}
 	elsif  ($ARGV[0] =~ m|$url_prefix.+/episode/|) {
 	  print encode($charcode, "個別ページダウンロード未対応\n");
+	}
+	else {
+	  print encode($charcode, "URLの形式が、『" .
+				              "$url_prefix/8〜9桁の数字/8〜9桁の数字" .
+				               "』\nと違います" . "\n");
 	}
   }
   else {
