@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# last updated : 2017/06/21 22:12:12 JST
+# last updated : 2017/06/22 11:24:49 JST
 #
 # アルファポリスの投稿小説を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -168,7 +168,7 @@ sub get_all {
 	print STDERR encode($charcode, $title . " ::取得完了\n");
 	my $midasi = "\n［＃中見出し］" . $title . "［＃中見出し終わり］\n\n\n";
 	if ( defined($chapter_title) ) {
-	  $chapter_title = "\n［＃大見出し］" . $chapter_title . "［＃大見出し終わり］\n";
+	  $chapter_title = "\n" . $chapter_title . "\n";
 	  $item = $kaipage . $separator .
 	          $chapter_title . $midasi . $text . "\n\n" . $separator;
 	}
