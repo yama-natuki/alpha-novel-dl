@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# last updated : 2017/06/22 11:24:49 JST
+# last updated : 2017/06/22 11:26:31 JST
 #
 # アルファポリスの投稿小説を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -110,11 +110,6 @@ sub honbun {
   $chapter_title = $1;
   $chapter_title =~ s/\t//g;
   $chapter_title =~ s/\n//g;
-  # 節見出し取得
-  $item =~  m|<h2 class="episode-title">(.+?)</h2>|s;
-  $episode_title = $1;
-  $episode_title =~ s/\t//g;
-  $episode_title =~ s/\n//g;
   # 本文取得
   $item =~  m|.*<div class="text ">(.+)</div>.+<a href="/Users/login.+|s;
   $item =   $1;
