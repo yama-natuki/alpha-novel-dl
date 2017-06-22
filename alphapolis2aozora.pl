@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# last updated : 2017/06/22 11:44:54 JST
+# last updated : 2017/06/22 12:05:42 JST
 #
 # アルファポリスの投稿小説を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -103,12 +103,12 @@ sub header {
 sub honbun {
   my $item = shift;
   utf8::decode($item);
-  $item =~  s/\x0D\x0A/\n/g; #改行コード変換。
+  $item =~  s|\x0D\x0A|\n|g; #改行コード変換。
   # 章見出し取得
   $item =~  m|<div class="chapter-title">(.+?)</div>|s;
-  $chapter_title = $1;
-  $chapter_title =~ s/\t//g;
-  $chapter_title =~ s/\n//g;
+  $chapter_title =  $1;
+  $chapter_title =~ s|\t||g;
+  $chapter_title =~ s|\n||g;
   # 本文取得
   $item =~  m|.*<div class="text ">(.+)</div>.+<a href="/Users/login.+|s;
   $item =   $1;
@@ -161,7 +161,7 @@ sub get_all {
 	my $title = scalar(@$index[$i]->[0]);
 	print STDERR encode($charcode, "success:: $title \n");
 	my $midasi = "\n［＃中見出し］" . $title . "［＃中見出し終わり］\n\n\n";
-	if ( defined($chapter_title) ) {
+	if ( $chapter_title ne "" ) {
 	  $chapter_title = "\n" . $chapter_title . "\n";
 	  $item = $kaipage . $separator .
 	          $chapter_title . $midasi . $text . "\n\n" . $separator;
