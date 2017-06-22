@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# last updated : 2017/06/22 12:47:22 JST
+# last updated : 2017/06/22 13:07:23 JST
 #
 # アルファポリスの投稿小説を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -32,16 +32,15 @@ use utf8;
 use Encode;
 use File::Basename;
 
+my $url_prefix = "https://www.alphapolis.co.jp";
 my $user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0';
-my @url_list = (); # url list
 my $separator = "▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼\n";
+my @url_list = (); # url list
 my $kaipage = "［＃改ページ］\n";
 my $contents;
 my ($main_title, $author );
 my $pic_count = 1;
-my $url_prefix = "https://www.alphapolis.co.jp";
 my $chapter_title;
-my $episode_title;
 my $charcode = 'UTF-8';
 
 if ($^O =~ m/MSWin32/) {
@@ -70,9 +69,9 @@ sub html2tree {
 # 目次作成
 sub get_index {
   my $item = shift;
-  my $count = 0;
   $item = &html2tree($item);
-  my $mokuji = $item->look_down('class', 'table-of-contents novels')->look_down('class', "episodes");
+  my $mokuji = $item->look_down('class', 'table-of-contents novels')
+	                ->look_down('class', "episodes");
   foreach my $tag ($mokuji->find('a')) {
 	my $url = $tag->find('a')->attr('href'); # url
 	my $title = $tag->look_down('class', 'title')->as_text; # title
@@ -159,7 +158,8 @@ sub get_all {
 	if ( $chapter_title ne "" ) {
 	  $chapter_title = "\n" . $chapter_title . "\n";
 	  $item = $kaipage . $separator .
-	          $chapter_title . $midasi . $text . "\n\n" . $separator;
+	          $chapter_title .
+			  $midasi . $text . "\n\n" . $separator;
 	}
 	else {
 	  $item = $kaipage . $separator .
