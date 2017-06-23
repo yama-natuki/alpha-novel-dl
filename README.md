@@ -12,6 +12,7 @@ alphapolis2aozora.plとは？
 - ルビ対応
 - 傍点対応
 - cp932対応
+- 追加分取得機能
 
 # 導入方法
 
@@ -37,6 +38,9 @@ alphapolis2aozora.plとは？
 
 　この時挿絵がある場合は、カレントディレクトリに保存される。
 
+# 分割
+
+　ファイルが大きくて分割したい場合は、 [aozora_splitter](https://github.com/yama-natuki/aozora_splitter) を使用。
 
 # ライセンス
 　GPLv2

@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# last updated : 2017/06/23 10:27:18 JST
+# last updated : 2017/06/23 12:14:11 JST
 #
 # アルファポリスの投稿小説を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -22,6 +22,9 @@
 # 変更履歴
 # 2017年06月21日(水曜日) 16:55:46 JST
 # アルファポリスのサイトリニューアルに伴い、取得できるように書き換えた。
+# 2017年06月23日(金曜日) 12:12:01 JST
+# 追加されたエピソードだけ取得をする機能を追加。
+#    -u YY.MM.DD の形式で日付を指定すれば、その日付以降だけをダウンロードする。
 #
 
 use strict;
@@ -31,18 +34,18 @@ use HTML::TreeBuilder;
 use utf8;
 use Encode;
 use File::Basename;
+use Time::Local 'timelocal';
 use Getopt::Long qw(:config posix_default no_ignore_case gnu_compat);
 
+my $url_prefix = "https://www.alphapolis.co.jp";
 my $user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0';
-my @url_list = (); # url list
 my $separator = "▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼\n";
+my @url_list = (); # url list
 my $kaipage = "［＃改ページ］\n";
 my $contents;
 my ($main_title, $author );
 my $pic_count = 1;
-my $url_prefix = "https://www.alphapolis.co.jp";
 my $chapter_title;
-my $episode_title;
 my ($split_size, $update, $show_help );
 my $last_date;
 my $charcode = 'UTF-8';
@@ -73,15 +76,25 @@ sub html2tree {
 # 目次作成
 sub get_index {
   my $item = shift;
-  my $count = 0;
   $item = &html2tree($item);
-  my $mokuji = $item->look_down('class', 'table-of-contents novels')->look_down('class', "episodes");
+  my $mokuji = $item->look_down('class', 'table-of-contents novels')
+	                ->look_down('class', "episodes");
   foreach my $tag ($mokuji->find('a')) {
 	my $url = $tag->find('a')->attr('href'); # url
 	my $title = $tag->look_down('class', 'title')->as_text; # title
 	utf8::decode($title);
 	$url = $url_prefix . $url;
-	push(@url_list, [$title, $url]); # タイトル,url二組で格納。
+	if ($update) {
+	  my $open_date = $tag->look_down('class', 'open-date')->as_text;
+	  $open_date =~ s|(\d{4}\.\d{2}\.\d{2}) \d.+|$1|;
+	  $open_date = &epochtime( $open_date );
+	  if ($open_date > $last_date) {
+		push(@url_list, [$title, $url]); # タイトル,url二組で格納。
+	  }
+	}
+	else {
+	  push(@url_list, [$title, $url]); # タイトル,url二組で格納。
+	}
   }
 }
 
@@ -162,7 +175,8 @@ sub get_all {
 	if ( $chapter_title ne "" ) {
 	  $chapter_title = "\n" . $chapter_title . "\n";
 	  $item = $kaipage . $separator .
-	          $chapter_title . $midasi . $text . "\n\n" . $separator;
+	          $chapter_title .
+			  $midasi . $text . "\n\n" . $separator;
 	}
 	else {
 	  $item = $kaipage . $separator .
@@ -197,6 +211,16 @@ sub help {
   exit 0;
 }
 
+# YYYY.MM.DD -> epoch time.
+sub epochtime {
+    my $item = shift;
+	my @index = split(/\./, $item);
+	my $day   = $index[2];
+	my $month = $index[1] -1;
+	my $year  = $index[0] -1900;
+	return timelocal(00, 00, 00, $day, $month, $year);
+}
+
 #main
 {
   my $url;
@@ -204,9 +228,8 @@ sub help {
 
   if ($update) {
 	if ($update =~ m|\d{2}\.\d{2}\.\d{2}| ) {
-	  print STDERR encode($charcode,
-						  "Check DATE:: " . $update ."\n");
 	  $last_date = "20" . $update;
+	  $last_date = &epochtime( $last_date);
 	}
   }
 
