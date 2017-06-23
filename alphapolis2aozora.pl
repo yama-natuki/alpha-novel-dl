@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# last updated : 2017/06/22 12:47:22 JST
+# last updated : 2017/06/23 10:27:18 JST
 #
 # アルファポリスの投稿小説を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -31,6 +31,7 @@ use HTML::TreeBuilder;
 use utf8;
 use Encode;
 use File::Basename;
+use Getopt::Long qw(:config posix_default no_ignore_case gnu_compat);
 
 my $user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0';
 my @url_list = (); # url list
@@ -42,6 +43,8 @@ my $pic_count = 1;
 my $url_prefix = "https://www.alphapolis.co.jp";
 my $chapter_title;
 my $episode_title;
+my ($split_size, $update, $show_help );
+my $last_date;
 my $charcode = 'UTF-8';
 
 if ($^O =~ m/MSWin32/) {
@@ -169,10 +172,44 @@ sub get_all {
   }
 }
 
+#コマンドラインの取得
+sub getopt() {
+  GetOptions(
+    "update|u=s" => \$update,
+    "help|h"	 => \$show_help
+  );
+}
+
+sub help {
+  print STDERR encode($charcode,
+		"alphapolis2aozora.pl  (c) 2017 ◆.nITGbUipI\n" .
+        "Usage: alphapolis2aozora [options]  [目次url] > [保存ファイル]\n".
+        "\tアルファポリス投稿小説ダウンローダ\n".
+        "\tまとめてダウンロードし標準出力に出力します\n".
+        "\n".
+        "\tOption:\n".
+        "\t\t-u|--update\n".
+        "\t\t\tYY.MM.DD形式の日付を与えると、その日付以降の\n".
+        "\t\t\tデータだけをダウンロードします。\n".
+        "\t\t-h|--help\n".
+        "\t\t\tこのテキストを表示する。\n"
+      );
+  exit 0;
+}
 
 #main
 {
   my $url;
+  &getopt;
+
+  if ($update) {
+	if ($update =~ m|\d{2}\.\d{2}\.\d{2}| ) {
+	  print STDERR encode($charcode,
+						  "Check DATE:: " . $update ."\n");
+	  $last_date = "20" . $update;
+	}
+  }
+
   if (@ARGV == 1) {
 	if ($ARGV[0] =~ m|$url_prefix/novel/\d{8,9}/\d{8,9}/?$|) {
 	  $url = $ARGV[0];
@@ -182,21 +219,23 @@ sub get_all {
 	  &get_all( \@url_list);
 	}
 	elsif  ($ARGV[0] =~ m|$url_prefix.+/episode/|) {
-	  print encode($charcode, "個別ページダウンロード未対応\n");
+	  print STDERR encode($charcode,
+						  "個別ページダウンロード未対応\n");
 	}
 	else {
-	  print encode($charcode, "URLの形式が、『" .
-				              "$url_prefix/8〜9桁の数字/8〜9桁の数字" .
-				               "』\nと違います" . "\n");
+	  print STDERR encode($charcode,
+						  "URLの形式が、『" .
+						  "$url_prefix/novel/8〜9桁の数字/8〜9桁の数字" .
+						  "』\nと違います" . "\n");
 	}
   }
   else {
-	print encode($charcode,
-				 "./alphapolis2aozora.pl  (c) 2017 ◆.nITGbUipI\n" .
-				 "アルファポリス投稿小説ダウンローダ\n\n" .
-				 "Usage:\n" .
-				 "./alphapols2aozora.pl URL\n" .
-				 "目次ページを指定してください\n"
-				 );
+	&help;
+	exit 0;
+  }
+
+  if ($show_help) {
+	&help;
+	exit 0;
   }
 }
