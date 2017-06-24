@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+# last updated : 2017/06/24 10:24:53 JST
 #
 # アルファポリスの投稿小説を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -47,6 +48,7 @@ my $pic_count = 1;
 my $chapter_title;
 my ($chklist, $split_size, $update, $show_help );
 my $last_date;
+my @check_list;
 my $charcode = 'UTF-8';
 
 if ($^O =~ m/MSWin32/) {
@@ -229,6 +231,36 @@ sub epochtime {
 	my $month = $index[1] -1;
 	my $year  = $index[0] -1900;
 	return timelocal(00, 00, 00, $day, $month, $year);
+}
+
+# リスト読み込み
+sub load_list {
+  my $file_name = shift;
+  my $LIST;
+  my (@item, @list);
+  my %hash;
+  my $oldsep = $/;
+  $/ = ""; # セパレータを空行に。段落モード
+  open ( $LIST, "<::encoding($charcode)" ,"$file_name") or die "$!";
+  while (my $line = <$LIST>) {
+	push(@item, $line);
+  }
+  close($LIST);
+  $/ = $oldsep;
+  # レコード処理
+  for (my $i =0; $i <= $#item; $i++) {
+	my @record = split('\n', $item[$i]);
+	foreach my $field (@record) {
+	  my @atom = split(/=/, $field);
+	  $atom[0] =~ s/ *//g;
+	  $atom[1] =~ s/^ *//g;
+	  $atom[1] =~ s/"//g;
+	  $hash{$atom[0]} = $atom[1]; #ハッシュキーと値を追加。
+	}
+	$list[$i] = {%hash}; # ハッシュを配列に格納
+  }
+  undef @item; #メモリ開放
+  return @list;
 }
 
 #main
