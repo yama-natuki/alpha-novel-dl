@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-# last updated : 2017/06/24 11:28:08 JST
 #
 # アルファポリスの投稿小説を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
