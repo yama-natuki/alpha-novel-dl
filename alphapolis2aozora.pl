@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# last updated : 2017/06/24 10:24:53 JST
+# last updated : 2017/06/24 10:48:10 JST
 #
 # アルファポリスの投稿小説を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -251,13 +251,18 @@ sub load_list {
   for (my $i =0; $i <= $#item; $i++) {
 	my @record = split('\n', $item[$i]);
 	foreach my $field (@record) {
-	  my @atom = split(/=/, $field);
-	  $atom[0] =~ s/ *//g;
-	  $atom[1] =~ s/^ *//g;
-	  $atom[1] =~ s/"//g;
-	  $hash{$atom[0]} = $atom[1]; #ハッシュキーと値を追加。
+	  if ($field =~ /^(title|file|url|update)/) {
+		my @atom = split(/=/, $field);
+		$atom[0] =~ s/ *//g;
+		$atom[1] =~ s/^ *//g;
+		$atom[1] =~ s/"//g;
+		$hash{$atom[0]} = $atom[1]; #ハッシュキーと値を追加。
+	  }
 	}
-	$list[$i] = {%hash}; # ハッシュを配列に格納
+	if ($hash{'title'}) {
+	  $list[$i] = {%hash}; # ハッシュを配列に格納
+	}
+	undef %hash;
   }
   undef @item; #メモリ開放
   return @list;
@@ -269,7 +274,9 @@ sub load_list {
   &getopt;
 
   if ($chklist) {
-
+	print "$chklist\n";
+#	@check_list = &load_list( $chklist );
+	exit 0;
   }
   
   if ($update) {
