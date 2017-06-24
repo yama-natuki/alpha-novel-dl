@@ -255,6 +255,16 @@ sub epochtime {
 	return timelocal(00, 00, 00, $day, $month, $year);
 }
 
+sub timeepoc {
+  my $item =shift;
+  my ($sec,$min,$hour,$mday,$month,$year,$wday,$yday,$isdst) = localtime($item);
+  $year = 1900 + $year;
+  $month++;
+  $month = sprintf("%02d", $month);
+  $mday = sprintf("%02d", $mday);
+  return "$year.$month.$mday";
+}
+
 # リスト読み込み
 sub load_list {
   my $file_name = shift;
@@ -306,6 +316,7 @@ sub jyunkai_save {
 	print STDERR encode($charcode, "START :: " . $title . "\n");
 	print encode($charcode, &header( $body ) );
 	&get_all( \@url_list);
+	# ここに日付更新処理いれるかな
 	@url_list = ();
 	$base_path = undef;
   }
