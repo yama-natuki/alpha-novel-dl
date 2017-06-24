@@ -99,7 +99,7 @@ sub get_index {
 	  $open_date =~ s|(\d{4}\.\d{2}\.\d{2}) \d.+|$1|;
 	  $open_date = &epochtime( $open_date );
 	  if ($open_date > $last_date) {
-		push(@url_list, [$title, $url]); # タイトル,url二組で格納。
+		push(@url_list, [$title, $url, $open_date]);
 	  }
 	}
 	else {
@@ -304,10 +304,14 @@ sub jyunkai_save {
   my $count = scalar(@check_list);
   my $path;
   my $save_file;
-  foreach my $row (@check_list) {
-	my $fname = $row->{'file_name'};
-	my $url = $row->{'url'};
-	my $title = $row->{'title'};
+  for (my $i = 0; $i < $count; $i++) {
+	my $fname = $check_list[$1]->{'file_name'};
+	my $url = $check_list[$1]->{'url'};
+	my $title = $check_list[$1]->{'title'};
+	my $time = $check_list[$1]->{'update'};
+	if ( defined($time) ) {
+	  $last_date = &epochtime( $time );
+	}
 	$base_path = File::Spec->catfile( $savedir, $fname );
 	$save_file = &get_path($base_path, $fname) . ".txt";
 	open(STDOUT, ">:encoding($charcode)", $save_file);
@@ -317,8 +321,11 @@ sub jyunkai_save {
 	print encode($charcode, &header( $body ) );
 	&get_all( \@url_list);
 	# ここに日付更新処理いれるかな
+	my $num = @url_list;
+	$check_list[$1]->{update} = &timeepoc( $url_list[$num]->[2] );
 	@url_list = ();
 	$base_path = undef;
+	$last_date = undef;
   }
   close($save_file);
 }
