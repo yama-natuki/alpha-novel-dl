@@ -45,7 +45,7 @@ my $contents;
 my ($main_title, $author );
 my $pic_count = 1;
 my $chapter_title;
-my ($split_size, $update, $show_help );
+my ($chklist, $split_size, $update, $show_help );
 my $last_date;
 my $charcode = 'UTF-8';
 
@@ -195,8 +195,9 @@ sub honbun_formater  {
 #コマンドラインの取得
 sub getopt() {
   GetOptions(
-    "update|u=s" => \$update,
-    "help|h"	 => \$show_help
+    "chklist|c=s" => \$chklist,
+    "update|u=s"  => \$update,
+    "help|h"	  => \$show_help
   );
 }
 
@@ -205,12 +206,15 @@ sub help {
 		"alphapolis2aozora.pl  (c) 2017 ◆.nITGbUipI\n" .
         "Usage: alphapolis2aozora [options]  [目次url] > [保存ファイル]\n".
         "\tアルファポリス投稿小説ダウンローダ\n".
-        "\tまとめてダウンロードし標準出力に出力します\n".
+        "\tまとめてダウンロードし標準出力に出力する。\n".
         "\n".
         "\tOption:\n".
+        "\t\t-c|--chklist\n".
+        "\t\t\t引数に指定したリストを与えると巡回チェックし、\n".
+        "\t\t\t新規追加されたデータだけをダウンロードする。\n".
         "\t\t-u|--update\n".
         "\t\t\tYY.MM.DD形式の日付を与えると、その日付以降の\n".
-        "\t\t\tデータだけをダウンロードします。\n".
+        "\t\t\tデータだけをダウンロードする。\n".
         "\t\t-h|--help\n".
         "\t\t\tこのテキストを表示する。\n"
       );
@@ -232,6 +236,10 @@ sub epochtime {
   my $url;
   &getopt;
 
+  if ($chklist) {
+
+  }
+  
   if ($update) {
 	if ($update =~ m|\d{2}\.\d{2}\.\d{2}| ) {
 	  $last_date = "20" . $update;
