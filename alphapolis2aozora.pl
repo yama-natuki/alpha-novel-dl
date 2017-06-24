@@ -307,7 +307,6 @@ sub get_path {
   my $fullpath;
   if ( -d $path ) {
 	  $fullpath = File::Spec->catfile($path, $name);
-	  print STDERR encode($charcode, "Output Dir :: $fullpath\n");
 	}
 	else {
 	  require File::Path;
