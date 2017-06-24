@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-# last updated : 2017/06/24 11:00:57 JST
 #
 # アルファポリスの投稿小説を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -36,6 +35,7 @@ use Encode;
 use File::Basename;
 use Time::Local 'timelocal';
 use Getopt::Long qw(:config posix_default no_ignore_case gnu_compat);
+use Cwd;
 
 my $url_prefix = "https://www.alphapolis.co.jp";
 my $user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0';
@@ -272,6 +272,40 @@ sub load_list {
   return @list;
 }
 
+sub jyunkai_save {
+  my $count = scalar(@check_list);
+  my $path;
+  my $savepath;
+  foreach my $row (@check_list) {
+	my $fname = $row->{'file_name'} . ".txt";
+	my $url = $row->{'url'};
+	$savepath = &get_path($savedir, $fname);
+	open(STDOUT, ">:encoding($charcode)", $savepath);
+	my $body = &get_contents( $url );
+	&get_index( $body ); # 目次作成
+	print encode($charcode, &header( $body ) );
+	&get_all( \@url_list);
+  }
+  close($savepath);
+}
+
+sub get_path {
+  my ($path, $name) = @_;
+  my $fullpath;
+  require File::Spec;
+  if ( -d $path ) {
+	  $fullpath = File::Spec->catfile($path, $name);
+#	  print encode($charcode, "$fullpath\n");
+	}
+	else {
+	  require File::Path;
+	  File::Path::make_path( $path );
+	  $fullpath = File::Spec->catfile($path, $name);
+#	  print encode($charcode, "Dir作成：：$fullpath\n");
+	}
+  return $fullpath;
+}
+
 #main
 {
   my $url;
@@ -279,11 +313,11 @@ sub load_list {
 
   if ($chklist) {
 	unless ($savedir) {
-	  require Cwd;
 	  $savedir = Cwd::getcwd();
 	}
-	print "$chklist\n";
-#	@check_list = &load_list( $chklist );
+#	print "$chklist\n";
+	@check_list = &load_list( $chklist );
+	&jyunkai_save;
 	exit 0;
   }
   
