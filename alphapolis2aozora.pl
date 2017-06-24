@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# last updated : 2017/06/24 10:48:10 JST
+# last updated : 2017/06/24 11:00:57 JST
 #
 # アルファポリスの投稿小説を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -46,7 +46,7 @@ my $contents;
 my ($main_title, $author );
 my $pic_count = 1;
 my $chapter_title;
-my ($chklist, $split_size, $update, $show_help );
+my ($chklist, $savedir, $split_size, $update, $show_help );
 my $last_date;
 my @check_list;
 my $charcode = 'UTF-8';
@@ -198,6 +198,7 @@ sub honbun_formater  {
 sub getopt() {
   GetOptions(
     "chklist|c=s" => \$chklist,
+    "savedir|s=s" => \$savedir,
     "update|u=s"  => \$update,
     "help|h"	  => \$show_help
   );
@@ -214,6 +215,9 @@ sub help {
         "\t\t-c|--chklist\n".
         "\t\t\t引数に指定したリストを与えると巡回チェックし、\n".
         "\t\t\t新規追加されたデータだけをダウンロードする。\n".
+        "\t\t-s|--savedir\n".
+        "\t\t\t保存先ディレクトリを指定する。\n".
+        "\t\t\t保存先にサブディレクトリを作って個別に保存される。\n".
         "\t\t-u|--update\n".
         "\t\t\tYY.MM.DD形式の日付を与えると、その日付以降の\n".
         "\t\t\tデータだけをダウンロードする。\n".
@@ -274,6 +278,10 @@ sub load_list {
   &getopt;
 
   if ($chklist) {
+	unless ($savedir) {
+	  require Cwd;
+	  $savedir = Cwd::getcwd();
+	}
 	print "$chklist\n";
 #	@check_list = &load_list( $chklist );
 	exit 0;
