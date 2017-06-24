@@ -55,7 +55,7 @@ my ($main_title, $author );
 my $pic_count = 1;
 my $chapter_title;
 my ($chklist, $savedir, $split_size, $update, $show_help );
-my $last_date;
+my $last_date;  #前回までの取得日
 my @check_list; #巡回リスト
 my $base_path;  #保存先dir
 my $charcode = 'UTF-8';
@@ -94,16 +94,16 @@ sub get_index {
 	my $title = $tag->look_down('class', 'title')->as_text; # title
 	utf8::decode($title);
 	$url = $url_prefix . $url;
+	my $open_date = $tag->look_down('class', 'open-date')->as_text;
+	$open_date =~ s|(\d{4}\.\d{2}\.\d{2}) \d.+|$1|;
+	$open_date = &epochtime( $open_date );
 	if ($update) {
-	  my $open_date = $tag->look_down('class', 'open-date')->as_text;
-	  $open_date =~ s|(\d{4}\.\d{2}\.\d{2}) \d.+|$1|;
-	  $open_date = &epochtime( $open_date );
 	  if ($open_date > $last_date) {
-		push(@url_list, [$title, $url, $open_date]);
+		push(@url_list, [$title, $url, $open_date]); # タイトル、url、公開日
 	  }
 	}
 	else {
-	  push(@url_list, [$title, $url]); # タイトル,url二組で格納。
+	  push(@url_list, [$title, $url, $open_date]); # タイトル、url、公開日
 	}
   }
 }
@@ -189,8 +189,9 @@ sub get_all {
 	my $text = &get_contents( scalar(@$index[$i]->[1]) );
 	$text = &honbun( $text );
 	my $title = scalar(@$index[$i]->[0]);
+	my $time = &timeepoc( scalar(@$index[$i]->[2]) );
 	$item = &honbun_formater( $text, $title );
-	print STDERR encode($charcode, "success:: $title \n");
+	print STDERR encode($charcode, "success:: $time : $title \n");
 	print encode($charcode, $item);
   }
 }
@@ -300,34 +301,52 @@ sub load_list {
   return @list;
 }
 
+sub save_list {
+  my($path, @list) = @_;
+  open(STDOUT, ">:encoding($charcode)", $path);
+  foreach my $row (@list) {
+	print encode($charcode, "title = " . $row->{'title'} . "\n");
+	print encode($charcode, "file_name = " . $row->{'file_name'} . "\n");
+	print "url = " . $row->{'url'} . "\n";
+	print "update = " . $row->{'update'} . "\n\n\n";
+  }
+  close($path);
+}
+
 sub jyunkai_save {
   my $count = scalar(@check_list);
   my $path;
   my $save_file;
   for (my $i = 0; $i < $count; $i++) {
-	my $fname = $check_list[$1]->{'file_name'};
-	my $url = $check_list[$1]->{'url'};
-	my $title = $check_list[$1]->{'title'};
-	my $time = $check_list[$1]->{'update'};
+	my $fname = $check_list[$i]->{'file_name'};
+	my $url = $check_list[$i]->{'url'};
+	my $title = $check_list[$i]->{'title'};
+	my $time = $check_list[$i]->{'update'};
 	if ( defined($time) ) {
 	  $last_date = &epochtime( $time );
+	  $update = 1;
 	}
 	$base_path = File::Spec->catfile( $savedir, $fname );
 	$save_file = &get_path($base_path, $fname) . ".txt";
-	open(STDOUT, ">:encoding($charcode)", $save_file);
+	open(STDOUT, ">>:encoding($charcode)", $save_file);
 	my $body = &get_contents( $url );
 	&get_index( $body ); # 目次作成
-	print STDERR encode($charcode, "START :: " . $title . "\n");
-	print encode($charcode, &header( $body ) );
-	&get_all( \@url_list);
-	# ここに日付更新処理いれるかな
-	my $num = @url_list;
-	$check_list[$1]->{update} = &timeepoc( $url_list[$num]->[2] );
+	if (@url_list) {
+	  print STDERR encode($charcode, "START :: " . $title . "\n");
+	  print encode($charcode, &header( $body ) );
+	  &get_all( \@url_list);
+	  my $num = scalar(@url_list);
+	  $check_list[$i]->{update} = &timeepoc( $url_list[$num -1]->[2] );
+	}
+	else {
+	  print STDERR encode($charcode, "No Update :: " . $title . "\n");
+	}
 	@url_list = ();
 	$base_path = undef;
 	$last_date = undef;
   }
   close($save_file);
+  &save_list( $chklist, @check_list );
 }
 
 sub get_path {
