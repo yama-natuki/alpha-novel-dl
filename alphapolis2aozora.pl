@@ -36,6 +36,7 @@ use File::Basename;
 use Time::Local 'timelocal';
 use Getopt::Long qw(:config posix_default no_ignore_case gnu_compat);
 use Cwd;
+use File::Spec;
 
 my $url_prefix = "https://www.alphapolis.co.jp";
 my $user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0';
@@ -48,7 +49,8 @@ my $pic_count = 1;
 my $chapter_title;
 my ($chklist, $savedir, $split_size, $update, $show_help );
 my $last_date;
-my @check_list;
+my @check_list; #巡回リスト
+my $base_path;  #保存先dir
 my $charcode = 'UTF-8';
 
 if ($^O =~ m/MSWin32/) {
@@ -153,6 +155,12 @@ sub ins_sasie {
 sub get_pic {
   my $address = shift;
   my $fname = basename( $address );
+  unless ( defined($base_path) ) {
+	$fname = basename( $address );
+  }
+  else {
+	$fname = &get_path($base_path, $fname);
+  }
   my $http = LWP::UserAgent->new;
   $http->agent($user_agent);
   my $res = $http->get( $address, ':content_file' => $fname );
@@ -245,7 +253,7 @@ sub load_list {
   my %hash;
   my $oldsep = $/;
   $/ = ""; # セパレータを空行に。段落モード
-  open ( $LIST, "<::encoding($charcode)" ,"$file_name") or die "$!";
+  open ( $LIST, "<:encoding($charcode)" ,"$file_name") or die "$!";
   while (my $line = <$LIST>) {
 	push(@item, $line);
   }
@@ -275,33 +283,37 @@ sub load_list {
 sub jyunkai_save {
   my $count = scalar(@check_list);
   my $path;
-  my $savepath;
+  my $save_file;
   foreach my $row (@check_list) {
-	my $fname = $row->{'file_name'} . ".txt";
+	my $fname = $row->{'file_name'};
 	my $url = $row->{'url'};
-	$savepath = &get_path($savedir, $fname);
-	open(STDOUT, ">:encoding($charcode)", $savepath);
+	my $title = $row->{'title'};
+	$base_path = File::Spec->catfile( $savedir, $fname );
+	$save_file = &get_path($base_path, $fname) . ".txt";
+	open(STDOUT, ">:encoding($charcode)", $save_file);
 	my $body = &get_contents( $url );
 	&get_index( $body ); # 目次作成
+	print STDERR encode($charcode, "START :: " . $title . "\n");
 	print encode($charcode, &header( $body ) );
 	&get_all( \@url_list);
+	@url_list = ();
+	$base_path = undef;
   }
-  close($savepath);
+  close($save_file);
 }
 
 sub get_path {
   my ($path, $name) = @_;
   my $fullpath;
-  require File::Spec;
   if ( -d $path ) {
 	  $fullpath = File::Spec->catfile($path, $name);
-#	  print encode($charcode, "$fullpath\n");
+	  print STDERR encode($charcode, "Output Dir :: $fullpath\n");
 	}
 	else {
 	  require File::Path;
 	  File::Path::make_path( $path );
 	  $fullpath = File::Spec->catfile($path, $name);
-#	  print encode($charcode, "Dir作成：：$fullpath\n");
+	  print STDERR encode($charcode, "mkdir :: $fullpath\n");
 	}
   return $fullpath;
 }
