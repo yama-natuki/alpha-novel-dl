@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# last updated : 2017/06/23 14:23:59 JST
+# last updated : 2017/06/24 11:28:08 JST
 #
 # アルファポリスの投稿小説を青空文庫形式にしてダウンロードする。
 # Copyright (c) 2017 ◆.nITGbUipI
@@ -170,20 +170,27 @@ sub get_all {
 	my $text = &get_contents( scalar(@$index[$i]->[1]) );
 	$text = &honbun( $text );
 	my $title = scalar(@$index[$i]->[0]);
+	$item = &honbun_formater( $text, $title );
 	print STDERR encode($charcode, "success:: $title \n");
-	my $midasi = "\n［＃中見出し］" . $title . "［＃中見出し終わり］\n\n\n";
-	if ( $chapter_title ne "" ) {
-	  $chapter_title = "\n" . $chapter_title . "\n";
-	  $item = $kaipage . $separator .
-	          $chapter_title .
-			  $midasi . $text . "\n\n" . $separator;
-	}
-	else {
-	  $item = $kaipage . $separator .
-	          $midasi . $text . "\n\n" . $separator;
-	}
 	print encode($charcode, $item);
   }
+}
+
+sub honbun_formater  {
+  my ($text, $title) = @_;
+  my $item;
+  my $midasi = "\n［＃中見出し］" . $title . "［＃中見出し終わり］\n\n\n";
+  if ( $chapter_title ne "" ) {
+	$chapter_title = "\n" . $chapter_title . "\n";
+	$item = $kaipage . $separator .
+	        $chapter_title .
+	        $midasi . $text . "\n\n" . $separator;
+  }
+  else {
+	$item = $kaipage . $separator .
+	        $midasi . $text . "\n\n" . $separator;
+  }
+  return $item;
 }
 
 #コマンドラインの取得
