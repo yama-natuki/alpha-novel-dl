@@ -1,10 +1,10 @@
-alphapolis2aozora.pl
+alpha-novel-dl.pl
 ===============================
 
-alphapolis2aozora.plとは？
+アルファポリス投稿小説自動ダウンローダ
 -------------------------------
 
-　アルファポリスの投稿小説を青空文庫形式に変換して標準出力に出力するダウンローダ。
+　アルファポリスの投稿小説を青空文庫形式に変換してダウンロード。
 
 ### 特徴
 
@@ -33,7 +33,7 @@ alphapolis2aozora.plとは？
 
 　落としたい小説の目次ページのurlをコピーしたら、
 
-`    ./alphapolis2aozora.pl 目次のurl  >  保存先ファイル名 `
+`    ./alpha-novel-dl.pl 目次のurl  >  保存先ファイル名 `
 
 でファイルに保存される。
 
@@ -47,7 +47,7 @@ alphapolis2aozora.plとは？
 
 　例えば巡回リスト __alpha.lst__ で、保存先ベースディレクトリを __~/book__ 以下に保存したい場合、
 
-`    ./alphapolis2aozora.pl -c alpha.lst -s ~/book `
+`    ./alpha-novel-dl.pl -c alpha.lst -s ~/book `
 
 とする。
 
@@ -60,14 +60,3 @@ alphapolis2aozora.plとは？
 # ライセンス
 　GPLv2
 
-# その他
-
-　名前が長いな………
-
-`    alias a2a="~/git/alphapolis2aozora/alphapolis2aozora.pl " `
-
-とかしてもう __a2a__ でいいんじゃねorz
-
-　というかもう機能追加したせいで名前と実態が合っていない。
-
-　alpha-novel.pl に改名しようか……

@@ -5,18 +5,19 @@
 # license GPLv2
 #
 # Usage.
-# ./alphapolis2aozora.pl 目次url > 保存先ファイル名
+# ./alpha-novel-dl.pl 目次url > 保存先ファイル名
 #
-# としてリダイレクトすれば青空文庫形式で保存されます。
+# としてリダイレクトすれば青空文庫形式で保存される。
 #
 # 特徴
 # ・挿絵対応
-#     カレントディレクトリに保存されます。
+#     カレントディレクトリに保存さる。
 # ・ルビ対応
 # ・傍点対応
 # ・cp932対応
-#     utf8 な環境でしかテストしていません。
-#     一応WinではShift_JISで出力するようにはしています。
+#     utf8 な環境でしかテストしていない。
+#     一応WinではShift_JISで出力するようにはしている。
+# ・巡回機能
 #
 # 変更履歴
 # 2017年06月21日(水曜日) 16:55:46 JST
@@ -28,7 +29,7 @@
 # 巡回機能を追加。
 # 巡回リストを指定すると自動で巡回してくれる。
 # 
-# alphapolis2aozora.pl -c check.lst -s ~/Desktop
+#     alpha-novel-dl.pl -c check.lst -s ~/Desktop
 # と指定するとcheck.lstを読み込んで、~/Desktop/以下に個別Dirを作成して保存してくれる。
 # リスト形式はサンプルを参照。
 # 2017年06月25日(日曜日) 13:59:36 JST
@@ -229,8 +230,8 @@ sub getopt() {
 
 sub help {
   print STDERR encode($charcode,
-		"alphapolis2aozora.pl  (c) 2017 ◆.nITGbUipI\n" .
-        "Usage: alphapolis2aozora [options]  [目次url] > [保存ファイル]\n".
+		"alpha-novel-dl.pl  (c) 2017 ◆.nITGbUipI\n" .
+        "Usage: alpha-novel-dl.pl [options]  [目次url] > [保存ファイル]\n".
         "\tアルファポリス投稿小説ダウンローダ\n".
         "\tまとめてダウンロードし標準出力に出力する。\n".
         "\n".
