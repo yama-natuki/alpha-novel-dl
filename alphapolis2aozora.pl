@@ -139,6 +139,8 @@ sub honbun {
   $item =~  s|<ruby>(.+?)<rt>(.+?)</rt></ruby>|｜$1《$2》|g;
   $item =~  s|<em>(.+?)</em>|［＃傍点］$1［＃傍点終わり］|g;
   $item =~  s|</?span>||g;
+  $item =~  s|！！|!!|g;
+  $item =~  s|！？|!\?|g;
   # 挿絵処理
   if ( $item =~ m|story-image| ) {
 	$item =~  s|<a href=.+? class="story-image"><img src="(.+?)" alt=""/></a>|&ins_sasie($1)|e;
