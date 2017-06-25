@@ -342,7 +342,9 @@ sub jyunkai_save {
 	&get_index( $body ); # 目次作成
 	if (@url_list) {
 	  print STDERR encode($charcode, "START :: " . $title . "\n");
-	  print encode($charcode, &header( $body ) );
+	  unless ($update) {
+		print encode($charcode, &header( $body ) );
+	  }
 	  &get_all( \@url_list);
 	  my $num = scalar(@url_list);
 	  $check_list[$i]->{update} = &timeepoc( $url_list[$num -1]->[2] );
