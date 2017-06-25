@@ -289,11 +289,15 @@ sub load_list {
   for (my $i =0; $i <= $#item; $i++) {
 	my @record = split('\n', $item[$i]);
 	foreach my $field (@record) {
-	  if ($field =~ /^(title|file|url|update)/) {
+	  if ($field =~ /^(title|file_name|url|update)/) {
 		my @atom = split(/=/, $field);
 		$atom[0] =~ s/ *//g;
 		$atom[1] =~ s/^ *//g;
 		$atom[1] =~ s/"//g;
+		if ($atom[1] eq "") {
+		  print STDERR encode($charcode, "Err:: $field\n");
+		  exit 0;
+		}
 		$hash{$atom[0]} = $atom[1]; #ハッシュキーと値を追加。
 	  }
 	}
