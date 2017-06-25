@@ -314,10 +314,12 @@ sub save_list {
   my($path, @list) = @_;
   open(STDOUT, ">:encoding($charcode)", $path);
   foreach my $row (@list) {
-	print encode($charcode, "title = " . $row->{'title'} . "\n");
-	print encode($charcode, "file_name = " . $row->{'file_name'} . "\n");
-	print "url = " . $row->{'url'} . "\n";
-	print "update = " . $row->{'update'} . "\n\n\n";
+	print encode($charcode,
+				 "title = " .     $row->{'title'} .     "\n" .
+				 "file_name = " . $row->{'file_name'} . "\n" .
+				 "url = " .       $row->{'url'} .       "\n" .
+				 "update = " .    $row->{'update'} . "\n\n\n"
+				 );
   }
   close($path);
 }
@@ -328,9 +330,9 @@ sub jyunkai_save {
   my $save_file;
   for (my $i = 0; $i < $count; $i++) {
 	my $fname = $check_list[$i]->{'file_name'};
-	my $url = $check_list[$i]->{'url'};
+	my $url   = $check_list[$i]->{'url'};
 	my $title = $check_list[$i]->{'title'};
-	my $time = $check_list[$i]->{'update'};
+	my $time  = $check_list[$i]->{'update'};
 	if ( defined($time) ) {
 	  $last_date = &epochtime( $time );
 	  $update = 1;
@@ -408,13 +410,15 @@ sub get_path {
 	}
 	elsif  ($ARGV[0] =~ m|$url_prefix.+/episode/|) {
 	  print STDERR encode($charcode,
-                          "個別ページダウンロード未対応\n");
+                          "個別ページダウンロード未対応\n"
+						 );
 	}
 	else {
 	  print STDERR encode($charcode,
                           "URLの形式が、『" .
                           "$url_prefix/novel/8〜9桁の数字/8〜9桁の数字" .
-                          "』\nと違います" . "\n");
+                          "』\nと違います" . "\n"
+						 );
 	}
   }
   else {
