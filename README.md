@@ -55,7 +55,14 @@ alpha-novel-dl.pl
 
 ## 巡回リスト
 
-　リストの形式は同梱のサンプル参照。
+```
+    title = 作品名
+    file_name = 保存するファイル名
+    url = https://www.alphapolis.co.jp/novel/xxxxxxxxx/xxxxxxxxx
+```
+　の形式でリストを記述。各レコードは空行で区切る。
+
+　同梱のサンプル参照。
 
 # ライセンス
 　GPLv2
