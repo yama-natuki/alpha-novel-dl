@@ -344,6 +344,7 @@ sub jyunkai_save {
 	@url_list = ();
 	$base_path = undef;
 	$last_date = undef;
+	$update = undef;
   }
   close($save_file);
   &save_list( $chklist, @check_list );
