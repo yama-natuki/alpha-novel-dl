@@ -57,10 +57,6 @@ alphapolis2aozora.plとは？
 
 　リストの形式は同梱のサンプル参照。
 
-# 分割
-
-　ファイルが大きくて分割したい場合は、 [aozora_splitter](https://github.com/yama-natuki/aozora_splitter) を使用。
-
 # ライセンス
 　GPLv2
 
@@ -72,3 +68,6 @@ alphapolis2aozora.plとは？
 
 とかしてもう __a2a__ でいいんじゃねorz
 
+　というかもう機能追加したせいで名前と実態が合っていない。
+
+　alpha-novel.pl に改名しようか……
