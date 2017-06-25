@@ -141,6 +141,7 @@ sub honbun {
   $item =~  s|</?span>||g;
   $item =~  s|！！|!!|g;
   $item =~  s|！？|!\?|g;
+  $item =~ tr|\x{ff5e}|\x{301c}|; #全角チルダ->波ダッシュ
   # 挿絵処理
   if ( $item =~ m|story-image| ) {
 	$item =~  s|<a href=.+? class="story-image"><img src="(.+?)" alt=""/></a>|&ins_sasie($1)|e;
