@@ -395,6 +395,12 @@ sub get_path {
 	  $last_date = "20" . $update;
 	  $last_date = &epochtime( $last_date);
 	}
+	else {
+	  print STDERR encode($charcode,
+                          "YY.MM.DD の形式で入力してください\n"
+                         );
+	  exit 0;
+	}
   }
 
   if (@ARGV == 1) {
