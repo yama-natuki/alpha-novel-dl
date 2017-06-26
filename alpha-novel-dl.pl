@@ -53,7 +53,6 @@ use File::Spec;
 my $url_prefix = "https://www.alphapolis.co.jp";
 my $user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0';
 my $separator = "▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼\n";
-my @url_list = (); # url list
 my $kaipage = "［＃改ページ］\n";
 my $contents;
 my ($main_title, $author );
@@ -90,6 +89,7 @@ sub html2tree {
 # 目次作成
 sub get_index {
   my $item = shift;
+  my @url_list;
   $item = &html2tree($item);
   my $mokuji = $item->look_down('class', 'table-of-contents novels')
 	                ->look_down('class', "episodes");
@@ -110,6 +110,7 @@ sub get_index {
 	  push(@url_list, [$title, $url, $open_date]); # タイトル、url、公開日
 	}
   }
+  return @url_list;
 }
 
 # 作品名、著者名取得
@@ -338,20 +339,19 @@ sub jyunkai_save {
 	$save_file = &get_path($base_path, $fname) . ".txt";
 	open(STDOUT, ">>:encoding($charcode)", $save_file);
 	my $body = &get_contents( $url );
-	&get_index( $body ); # 目次作成
-	if (@url_list) {
+	my @dl_list = &get_index( $body ); # 目次作成
+	if (@dl_list) {
 	  print STDERR encode($charcode, "START :: " . $title . "\n");
 	  unless ($update) {
 		print encode($charcode, &header( $body ) );
 	  }
-	  &get_all( \@url_list);
-	  my $num = scalar(@url_list);
-	  $check_list[$i]->{update} = &timeepoc( $url_list[$num -1]->[2] );
+	  &get_all( \@dl_list );
+	  my $num = scalar(@dl_list);
+	  $check_list[$i]->{update} = &timeepoc( $dl_list[$num -1]->[2] );
 	}
 	else {
 	  print STDERR encode($charcode, "No Update :: " . $title . "\n");
 	}
-	@url_list = ();
 	$base_path = undef;
 	$last_date = undef;
 	$update = undef;
@@ -401,9 +401,9 @@ sub get_path {
 	if ($ARGV[0] =~ m|$url_prefix/novel/\d{8,9}/\d{8,9}/?$|) {
 	  $url = $ARGV[0];
 	  my $body = &get_contents( $url );
-	  &get_index( $body ); # 目次作成
+	  my @list = &get_index( $body ); # 目次作成
 	  print encode($charcode, &header( $body ) );
-	  &get_all( \@url_list);
+	  &get_all( \@list );
 	}
 	elsif  ($ARGV[0] =~ m|$url_prefix.+/episode/|) {
 	  print STDERR encode($charcode,
