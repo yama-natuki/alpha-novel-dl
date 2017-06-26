@@ -101,7 +101,6 @@ sub get_index {
 	my $open_date = $tag->look_down('class', 'open-date')->as_text;
 	$open_date =~ s|(\d{4}\.\d{2}\.\d{2}) \d.+|$1|;
 	$open_date = &epochtime( $open_date );
-
 	$url_list->[$count] = [$title, $url, $open_date]; # タイトル、url、公開日
 	$count++;
   }
@@ -113,9 +112,6 @@ sub get_index {
 	  push(@up_list, $reverse[$i]);
 	}
 	@up_list = reverse( @up_list );
-	foreach my $x (@up_list) {
-	  print STDERR &timeepoc($x->[2]) . "\n";
-	}
 	$url_list = \@up_list;
   }
   return $url_list;
