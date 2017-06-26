@@ -188,13 +188,13 @@ sub get_all {
   my $count = scalar(@$index);
   my $item;
   for ( my $i = 0; $i < $count; $i++) {
-	my $text = &get_contents( scalar(@$index[$i]->[1]) );
-	$text = &honbun( $text );
-	my $title = scalar(@$index[$i]->[0]);
-	my $time = &timeepoc( scalar(@$index[$i]->[2]) );
-	$item = &honbun_formater( $text, $title );
-	print STDERR encode($charcode, "success:: $time : $title \n");
-	print encode($charcode, $item);
+    my $text = &get_contents( scalar(@$index[$i]->[1]) );
+    $text = &honbun( $text );
+    my $title = scalar(@$index[$i]->[0]);
+    my $time = &timeepoc( scalar(@$index[$i]->[2]) );
+    $item = &honbun_formater( $text, $title );
+    print STDERR encode($charcode, "success:: $time : $title \n");
+    print encode($charcode, $item);
   }
 }
 
@@ -221,13 +221,13 @@ sub getopt() {
     "chklist|c=s" => \$chklist,
     "savedir|s=s" => \$savedir,
     "update|u=s"  => \$update,
-    "help|h"	  => \$show_help
+    "help|h"      => \$show_help
   );
 }
 
 sub help {
   print STDERR encode($charcode,
-		"alpha-novel-dl.pl  (c) 2017 ◆.nITGbUipI\n" .
+        "alpha-novel-dl.pl  (c) 2017 ◆.nITGbUipI\n" .
         "Usage: alpha-novel-dl.pl [options]  [目次url] > [保存ファイル]\n".
         "\tアルファポリス投稿小説ダウンローダ\n".
         "\tまとめてダウンロードし標準出力に出力する。\n".
@@ -250,12 +250,12 @@ sub help {
 
 # YYYY.MM.DD -> epoch time.
 sub epochtime {
-    my $item = shift;
-	my @index = split(/\./, $item);
-	my $day   = $index[2];
-	my $month = $index[1] -1;
-	my $year  = $index[0] -1900;
-	return timelocal(00, 00, 00, $day, $month, $year);
+  my $item = shift;
+  my @index = split(/\./, $item);
+  my $day   = $index[2];
+  my $month = $index[1] -1;
+  my $year  = $index[0] -1900;
+  return timelocal(00, 00, 00, $day, $month, $year);
 }
 
 sub timeepoc {
@@ -311,12 +311,12 @@ sub save_list {
   my($path, @list) = @_;
   open(STDOUT, ">:encoding($charcode)", $path);
   foreach my $row (@list) {
-	print encode($charcode,
-				 "title = " .     $row->{'title'} .     "\n" .
-				 "file_name = " . $row->{'file_name'} . "\n" .
-				 "url = " .       $row->{'url'} .       "\n" .
-				 "update = " .    $row->{'update'} . "\n\n\n"
-				 );
+    print encode($charcode,
+                 "title = " .     $row->{'title'} .     "\n" .
+                 "file_name = " . $row->{'file_name'} . "\n" .
+                 "url = " .       $row->{'url'} .       "\n" .
+                 "update = " .    $row->{'update'} . "\n\n\n"
+                 );
   }
   close($path);
 }
@@ -414,14 +414,14 @@ sub get_path {
 	elsif  ($ARGV[0] =~ m|$url_prefix.+/episode/|) {
 	  print STDERR encode($charcode,
                           "個別ページダウンロード未対応\n"
-						 );
+                         );
 	}
 	else {
 	  print STDERR encode($charcode,
                           "URLの形式が、『" .
                           "$url_prefix/novel/8〜9桁の数字/8〜9桁の数字" .
                           "』\nと違います" . "\n"
-						 );
+                         );
 	}
   }
   else {
