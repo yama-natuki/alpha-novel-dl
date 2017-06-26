@@ -101,16 +101,22 @@ sub get_index {
 	my $open_date = $tag->look_down('class', 'open-date')->as_text;
 	$open_date =~ s|(\d{4}\.\d{2}\.\d{2}) \d.+|$1|;
 	$open_date = &epochtime( $open_date );
-	if ($update) {
-	  if ($open_date > $last_date) {
-		$url_list->[$count] = [$title, $url, $open_date]; # タイトル、url、公開日
-		$count++;
-	  }
+
+	$url_list->[$count] = [$title, $url, $open_date]; # タイトル、url、公開日
+	$count++;
+  }
+
+  if ($update) {
+	my @reverse = reverse( @$url_list );
+	my @up_list = ();
+	for (my $i = 0; $reverse[$i]->[2] > $last_date; $i++) {
+	  push(@up_list, $reverse[$i]);
 	}
-	else {
-		$url_list->[$count] = [$title, $url, $open_date]; # タイトル、url、公開日
-		$count++;
+	@up_list = reverse( @up_list );
+	foreach my $x (@up_list) {
+	  print STDERR &timeepoc($x->[2]) . "\n";
 	}
+	$url_list = \@up_list;
   }
   return $url_list;
 }
