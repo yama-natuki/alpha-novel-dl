@@ -54,7 +54,6 @@ my $url_prefix = "https://www.alphapolis.co.jp";
 my $user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0';
 my $separator = "▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼\n";
 my $kaipage = "［＃改ページ］\n";
-my $contents;
 my ($main_title, $author );
 my $chapter_title;
 my ($chklist, $savedir, $split_size, $update, $show_help );
