@@ -57,7 +57,6 @@ my @url_list = (); # url list
 my $kaipage = "［＃改ページ］\n";
 my $contents;
 my ($main_title, $author );
-my $pic_count = 1;
 my $chapter_title;
 my ($chklist, $savedir, $split_size, $update, $show_help );
 my $last_date;  #前回までの取得日
@@ -159,11 +158,9 @@ sub honbun {
 sub ins_sasie {
   my $i = shift;
   return "［＃挿絵" .
-	     sprintf("%03d", $pic_count) .
 		 "（" .
 	     File::Basename::basename( $i ) .
 		 "）入る］\n";
-  $pic_count++;
 }
 
 # 挿絵保存
