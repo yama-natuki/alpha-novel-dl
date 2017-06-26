@@ -153,19 +153,9 @@ sub honbun {
   $item =~ tr|\x{ff5e}|\x{301c}|; #全角チルダ->波ダッシュ
   # 挿絵処理
   if ( $item =~ m|story-image| ) {
-	$item =~  s|<a href=.+? class="story-image"><img src="(.+?)" alt=""/></a>|&ins_sasie($1)|e;
-	&get_pic( $1);
+	$item =~  s|<a href=.+? class="story-image"><img src="(.+?)" alt=""/></a>|&get_pic($1)|eg;
   }
   return $item;
-}
-
-#挿絵リンク処理
-sub ins_sasie {
-  my $i = shift;
-  return "［＃挿絵" .
-		 "（" .
-	     File::Basename::basename( $i ) .
-		 "）入る］\n";
 }
 
 # 挿絵保存
@@ -186,6 +176,11 @@ sub get_pic {
   } else {
 	print STDERR encode($charcode, "error:: $fname\n");
   }
+  # 挿絵リンク処理
+  return "［＃挿絵" .
+		 "（" .
+	     File::Basename::basename( $address ) .
+		 "）入る］\n";
 }
 
 sub get_all {
