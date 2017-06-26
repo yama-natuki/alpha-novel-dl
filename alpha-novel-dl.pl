@@ -88,7 +88,8 @@ sub html2tree {
 # 目次作成
 sub get_index {
   my $item = shift;
-  my @url_list;
+  my $url_list = []; # リファレンス初期化
+  my $count = 0;
   $item = &html2tree($item);
   my $mokuji = $item->look_down('class', 'table-of-contents novels')
 	                ->look_down('class', "episodes");
@@ -102,14 +103,16 @@ sub get_index {
 	$open_date = &epochtime( $open_date );
 	if ($update) {
 	  if ($open_date > $last_date) {
-		push(@url_list, [$title, $url, $open_date]); # タイトル、url、公開日
+		$url_list->[$count] = [$title, $url, $open_date]; # タイトル、url、公開日
+		$count++;
 	  }
 	}
 	else {
-	  push(@url_list, [$title, $url, $open_date]); # タイトル、url、公開日
+		$url_list->[$count] = [$title, $url, $open_date]; # タイトル、url、公開日
+		$count++;
 	}
   }
-  return \@url_list;
+  return $url_list;
 }
 
 # 作品名、著者名取得
