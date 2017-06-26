@@ -63,166 +63,167 @@ my $base_path;  #保存先dir
 my $charcode = 'UTF-8';
 
 if ($^O =~ m/MSWin32/) {
-  $charcode = "cp932";
+    $charcode = "cp932";
 }
 
 sub get_contents {
-  my $address = shift;
-  my $http = LWP::UserAgent->new;
-  $http->agent($user_agent);
-  my $res = $http->get($address);
-  my $content = $res->content;
-  return $content;
+    my $address = shift;
+    my $http = LWP::UserAgent->new;
+    $http->agent($user_agent);
+    my $res = $http->get($address);
+    my $content = $res->content;
+    return $content;
 }
 
 # htmlパース
 sub html2tree {
-  my $item = shift;
-  my $tree = HTML::TreeBuilder->new;
-  $tree->no_space_compacting;
-  $tree->parse($item);
-  return $tree;
-  $tree->delete;
+    my $item = shift;
+    my $tree = HTML::TreeBuilder->new;
+    $tree->no_space_compacting;
+    $tree->parse($item);
+    return $tree;
+    $tree->delete;
 }
 
 # 目次作成
 sub get_index {
-  my $item = shift;
-  my $url_list = []; # リファレンス初期化
-  my $count = 0;
-  $item = &html2tree($item);
-  my $mokuji = $item->look_down('class', 'table-of-contents novels')
-	                ->look_down('class', "episodes");
-  foreach my $tag ($mokuji->find('a')) {
-	my $url = $tag->find('a')->attr('href'); # url
-	my $title = $tag->look_down('class', 'title')->as_text; # title
-	utf8::decode($title);
-	$url = $url_prefix . $url;
-	my $open_date = $tag->look_down('class', 'open-date')->as_text;
-	$open_date =~ s|(\d{4}\.\d{2}\.\d{2}) \d.+|$1|;
-	$open_date = &epochtime( $open_date );
-	$url_list->[$count] = [$title, $url, $open_date]; # タイトル、url、公開日
-	$count++;
-  }
+    my $item = shift;
+    my $url_list = [];          # リファレンス初期化
+    my $count = 0;
+    $item = &html2tree($item);
+    my $mokuji = $item->look_down('class', 'table-of-contents novels')
+        ->look_down('class', "episodes");
+    foreach my $tag ($mokuji->find('a')) {
+        my $url = $tag->find('a')->attr('href');            # url
+        my $title = $tag->look_down('class', 'title')->as_text; # title
+        utf8::decode($title);
+        $url = $url_prefix . $url;
+        my $open_date = $tag->look_down('class', 'open-date')->as_text;
+        $open_date =~ s|(\d{4}\.\d{2}\.\d{2}) \d.+|$1|;
+        $open_date = &epochtime( $open_date );
+        $url_list->[$count] = [$title, $url, $open_date]; # タイトル、url、公開日
+        $count++;
+    }
 
-  if ($update) {
-	my @reverse = reverse( @$url_list );
-	my @up_list = ();
-	for (my $i = 0; $reverse[$i]->[2] > $last_date; $i++) {
-	  push(@up_list, $reverse[$i]);
-	}
-	@up_list = reverse( @up_list );
-	$url_list = \@up_list;
-  }
-  return $url_list;
+    if ($update) {
+        my @reverse = reverse( @$url_list );
+        my @up_list = ();
+        for (my $i = 0; $reverse[$i]->[2] > $last_date; $i++) {
+            push(@up_list, $reverse[$i]);
+        }
+        @up_list = reverse( @up_list );
+        $url_list = \@up_list;
+    }
+    return $url_list;
 }
 
 # 作品名、著者名取得
 sub header {
-  my $item = shift;
-  $item = &html2tree( $item );
-  $item = $item->look_down( 'class', 'content-main');
-  $main_title = $item->look_down( 'class', 'title')->as_text;
-  $author = $item->look_down( 'class', 'author')->find('a')->as_text;
-  utf8::decode($main_title);
-  utf8::decode($author);
-  return sprintf("%s", $main_title . "\n" . $author . "\n\n\n");
+    my $item = shift;
+    $item = &html2tree( $item );
+    $item = $item->look_down( 'class', 'content-main');
+    $main_title = $item->look_down( 'class', 'title')->as_text;
+    $author = $item->look_down( 'class', 'author')->find('a')->as_text;
+    utf8::decode($main_title);
+    utf8::decode($author);
+    return sprintf("%s", $main_title . "\n" . $author . "\n\n\n");
 }
 
 # 本文処理
 sub honbun {
-  my $item = shift;
-  utf8::decode($item);
-  $item =~  s|\x0D\x0A|\n|g; #改行コード変換。
-  # 章見出し取得
-  $item =~  m|<div class="chapter-title">(.+?)</div>|s;
-  $chapter_title =  $1;
-  $chapter_title =~ s|\t||g;
-  $chapter_title =~ s|\n||g;
-  # 本文取得
-  $item =~  m|.*<div class="text ">(.+)</div>.+<a href="/Users/login.+|s;
-  $item =   $1;
-  $item =~  s|<br />||g;
-  $item =~  s|&nbsp;| |g;
-  $item =~  s|\t\t||; # 一行目のタブを削除。
-  $item =~  s|<ruby>(.+?)<rt>(.+?)</rt></ruby>|｜$1《$2》|g;
-  $item =~  s|<em>(.+?)</em>|［＃傍点］$1［＃傍点終わり］|g;
-  $item =~  s|</?span>||g;
-  $item =~  s|！！|!!|g;
-  $item =~  s|！？|!\?|g;
-  $item =~ tr|\x{ff5e}|\x{301c}|; #全角チルダ->波ダッシュ
-  # 挿絵処理
-  if ( $item =~ m|story-image| ) {
-	$item =~  s|<a href=.+? class="story-image"><img src="(.+?)" alt=""/></a>|&get_pic($1)|eg;
-  }
-  return $item;
+    my $item = shift;
+    utf8::decode($item);
+    $item =~  s|\x0D\x0A|\n|g;  #改行コード変換。
+    # 章見出し取得
+    $item =~  m|<div class="chapter-title">(.+?)</div>|s;
+    $chapter_title =  $1;
+    $chapter_title =~ s|\t||g;
+    $chapter_title =~ s|\n||g;
+    # 本文取得
+    $item =~  m|.*<div class="text ">(.+)</div>.+<a href="/Users/login.+|s;
+    $item =   $1;
+    $item =~  s|<br />||g;
+    $item =~  s|&nbsp;| |g;
+    $item =~  s|\t\t||;         # 一行目のタブを削除。
+    $item =~  s|<ruby>(.+?)<rt>(.+?)</rt></ruby>|｜$1《$2》|g;
+    $item =~  s|<em>(.+?)</em>|［＃傍点］$1［＃傍点終わり］|g;
+    $item =~  s|</?span>||g;
+    $item =~  s|！！|!!|g;
+    $item =~  s|！？|!\?|g;
+    $item =~ tr|\x{ff5e}|\x{301c}|; #全角チルダ->波ダッシュ
+    # 挿絵処理
+    if ( $item =~ m|story-image| ) {
+        $item =~  s|<a href=.+? class="story-image"><img src="(.+?)" alt=""/></a>|&get_pic($1)|eg;
+    }
+    return $item;
 }
 
 # 挿絵保存
 sub get_pic {
-  my $address = shift;
-  my $fname = basename( $address );
-  unless ( defined($base_path) ) {
-	$fname = basename( $address );
-  }
-  else {
-	$fname = &get_path($base_path, $fname);
-  }
-  my $http = LWP::UserAgent->new;
-  $http->agent($user_agent);
-  my $res = $http->get( $address, ':content_file' => $fname );
-  if ( $res->is_success ) {
-	print STDERR encode($charcode, "success:: $fname\n");
-  } else {
-	print STDERR encode($charcode, "error:: $fname\n");
-  }
-  # 挿絵リンク処理
-  return "［＃挿絵" .
-		 "（" .
-	     File::Basename::basename( $address ) .
-		 "）入る］\n";
+    my $address = shift;
+    my $fname = basename( $address );
+    unless ( defined($base_path) ) {
+        $fname = basename( $address );
+    }
+    else {
+        $fname = &get_path($base_path, $fname);
+    }
+    my $http = LWP::UserAgent->new;
+    $http->agent($user_agent);
+    my $res = $http->get( $address, ':content_file' => $fname );
+    if ( $res->is_success ) {
+        print STDERR encode($charcode, "success:: $fname\n");
+    }
+    else {
+        print STDERR encode($charcode, "error:: $fname\n");
+    }
+    # 挿絵リンク処理
+    return "［＃挿絵" .
+        "（" .
+        File::Basename::basename( $address ) .
+            "）入る］\n";
 }
 
 sub get_all {
-  my $index = shift;
-  my $count = scalar(@$index);
-  my $item;
-  for ( my $i = 0; $i < $count; $i++) {
-    my $text = &get_contents( scalar(@$index[$i]->[1]) );
-    $text = &honbun( $text );
-    my $title = scalar(@$index[$i]->[0]);
-    my $time = &timeepoc( scalar(@$index[$i]->[2]) );
-    $item = &honbun_formater( $text, $title );
-    print STDERR encode($charcode, "success:: $time : $title \n");
-    print encode($charcode, $item);
-  }
+    my $index = shift;
+    my $count = scalar(@$index);
+    my $item;
+    for ( my $i = 0; $i < $count; $i++) {
+        my $text = &get_contents( scalar(@$index[$i]->[1]) );
+        $text = &honbun( $text );
+        my $title = scalar(@$index[$i]->[0]);
+        my $time = &timeepoc( scalar(@$index[$i]->[2]) );
+        $item = &honbun_formater( $text, $title );
+        print STDERR encode($charcode, "success:: $time : $title \n");
+        print encode($charcode, $item);
+    }
 }
 
 sub honbun_formater  {
-  my ($text, $title) = @_;
-  my $item;
-  my $midasi = "\n［＃中見出し］" . $title . "［＃中見出し終わり］\n\n\n";
-  if ( $chapter_title ne "" ) {
-	$chapter_title = "\n" . $chapter_title . "\n";
-	$item = $kaipage . $separator .
-	        $chapter_title .
-	        $midasi . $text . "\n\n" . $separator;
-  }
-  else {
-	$item = $kaipage . $separator .
-	        $midasi . $text . "\n\n" . $separator;
-  }
-  return $item;
+    my ($text, $title) = @_;
+    my $item;
+    my $midasi = "\n［＃中見出し］" . $title . "［＃中見出し終わり］\n\n\n";
+    if ( $chapter_title ne "" ) {
+        $chapter_title = "\n" . $chapter_title . "\n";
+        $item = $kaipage . $separator .
+            $chapter_title .
+            $midasi . $text . "\n\n" . $separator;
+    }
+    else {
+        $item = $kaipage . $separator .
+            $midasi . $text . "\n\n" . $separator;
+    }
+    return $item;
 }
 
 #コマンドラインの取得
 sub getopt() {
-  GetOptions(
-    "chklist|c=s" => \$chklist,
-    "savedir|s=s" => \$savedir,
-    "update|u=s"  => \$update,
-    "help|h"      => \$show_help
-  );
+    GetOptions(
+               "chklist|c=s" => \$chklist,
+               "savedir|s=s" => \$savedir,
+               "update|u=s"  => \$update,
+               "help|h"      => \$show_help
+              );
 }
 
 sub help {
@@ -250,61 +251,61 @@ sub help {
 
 # YYYY.MM.DD -> epoch time.
 sub epochtime {
-  my $item = shift;
-  my @index = split(/\./, $item);
-  my $day   = $index[2];
-  my $month = $index[1] -1;
-  my $year  = $index[0] -1900;
-  return timelocal(00, 00, 00, $day, $month, $year);
+    my $item = shift;
+    my @index = split(/\./, $item);
+    my $day   = $index[2];
+    my $month = $index[1] -1;
+    my $year  = $index[0] -1900;
+    return timelocal(00, 00, 00, $day, $month, $year);
 }
 
 sub timeepoc {
-  my $item =shift;
-  my ($sec,$min,$hour,$mday,$month,$year,$wday,$yday,$isdst) = localtime($item);
-  $year = 1900 + $year;
-  $month++;
-  $month = sprintf("%02d", $month);
-  $mday = sprintf("%02d", $mday);
-  return "$year.$month.$mday";
+    my $item =shift;
+    my ($sec,$min,$hour,$mday,$month,$year,$wday,$yday,$isdst) = localtime($item);
+    $year = 1900 + $year;
+    $month++;
+    $month = sprintf("%02d", $month);
+    $mday = sprintf("%02d", $mday);
+    return "$year.$month.$mday";
 }
 
 # リスト読み込み
 sub load_list {
-  my $file_name = shift;
-  my $LIST;
-  my (@item, @list);
-  my %hash;
-  my $oldsep = $/;
-  $/ = ""; # セパレータを空行に。段落モード
-  open ( $LIST, "<:encoding($charcode)" ,"$file_name") or die "$!";
-  while (my $line = <$LIST>) {
-	push(@item, $line);
-  }
-  close($LIST);
-  $/ = $oldsep;
-  # レコード処理
-  for (my $i =0; $i <= $#item; $i++) {
-	my @record = split('\n', $item[$i]);
-	foreach my $field (@record) {
-	  if ($field =~ /^(title|file_name|url|update)/) {
-		my @atom = split(/=/, $field);
-		$atom[0] =~ s/ *//g;
-		$atom[1] =~ s/^ *//g;
-		$atom[1] =~ s/"//g;
-		if ($atom[1] eq "") {
-		  print STDERR encode($charcode, "Err:: $field\n");
-		  exit 0;
-		}
-		$hash{$atom[0]} = $atom[1]; #ハッシュキーと値を追加。
-	  }
-	}
-	if ($hash{'title'}) {
-	  $list[$i] = {%hash}; # ハッシュを配列に格納
-	}
-	undef %hash;
-  }
-  undef @item; #メモリ開放
-  return @list;
+    my $file_name = shift;
+    my $LIST;
+    my (@item, @list);
+    my %hash;
+    my $oldsep = $/;
+    $/ = "";                    # セパレータを空行に。段落モード
+    open ( $LIST, "<:encoding($charcode)" ,"$file_name") or die "$!";
+    while (my $line = <$LIST>) {
+        push(@item, $line);
+    }
+    close($LIST);
+    $/ = $oldsep;
+    # レコード処理
+    for (my $i =0; $i <= $#item; $i++) {
+        my @record = split('\n', $item[$i]);
+        foreach my $field (@record) {
+            if ($field =~ /^(title|file_name|url|update)/) {
+                my @atom = split(/=/, $field);
+                $atom[0] =~ s/ *//g;
+                $atom[1] =~ s/^ *//g;
+                $atom[1] =~ s/"//g;
+                if ($atom[1] eq "") {
+                    print STDERR encode($charcode, "Err:: $field\n");
+                    exit 0;
+                }
+                $hash{$atom[0]} = $atom[1]; #ハッシュキーと値を追加。
+            }
+        }
+        if ($hash{'title'}) {
+            $list[$i] = {%hash}; # ハッシュを配列に格納
+        }
+        undef %hash;
+    }
+    undef @item;                #メモリ開放
+    return @list;
 }
 
 sub save_list {
@@ -322,115 +323,115 @@ sub save_list {
 }
 
 sub jyunkai_save {
-  my $count = scalar(@check_list);
-  my $path;
-  my $save_file;
-  for (my $i = 0; $i < $count; $i++) {
-	my $fname = $check_list[$i]->{'file_name'};
-	my $url   = $check_list[$i]->{'url'};
-	my $title = $check_list[$i]->{'title'};
-	my $time  = $check_list[$i]->{'update'};
-	if ( defined($time) ) {
-	  $last_date = &epochtime( $time );
-	  $update = 1;
-	}
-	$base_path = File::Spec->catfile( $savedir, $fname );
-	$save_file = &get_path($base_path, $fname) . ".txt";
-	open(STDOUT, ">>:encoding($charcode)", $save_file);
-	my $body = &get_contents( $url );
-	my $dl_list = &get_index( $body ); # 目次作成
-	if (@$dl_list) {
-	  print STDERR encode($charcode, "START :: " . $title . "\n");
-	  unless ($update) {
-		print encode($charcode, &header( $body ) );
-	  }
-	  &get_all( $dl_list );
-	  my $num = scalar(@$dl_list) -1;
-	  # 最後の更新日をcheck listに入れる。
-	  $check_list[$i]->{update} = &timeepoc( $dl_list->[$num]->[2] );
-	}
-	else {
-	  print STDERR encode($charcode, "No Update :: " . $title . "\n");
-	}
-	$base_path = undef;
-	$last_date = undef;
-	$update = undef;
-  }
-  close($save_file);
-  &save_list( $chklist, @check_list );
+    my $count = scalar(@check_list);
+    my $path;
+    my $save_file;
+    for (my $i = 0; $i < $count; $i++) {
+        my $fname = $check_list[$i]->{'file_name'};
+        my $url   = $check_list[$i]->{'url'};
+        my $title = $check_list[$i]->{'title'};
+        my $time  = $check_list[$i]->{'update'};
+        if ( defined($time) ) {
+            $last_date = &epochtime( $time );
+            $update = 1;
+        }
+        $base_path = File::Spec->catfile( $savedir, $fname );
+        $save_file = &get_path($base_path, $fname) . ".txt";
+        open(STDOUT, ">>:encoding($charcode)", $save_file);
+        my $body = &get_contents( $url );
+        my $dl_list = &get_index( $body ); # 目次作成
+        if (@$dl_list) {
+            print STDERR encode($charcode, "START :: " . $title . "\n");
+            unless ($update) {
+                print encode($charcode, &header( $body ) );
+            }
+            &get_all( $dl_list );
+            my $num = scalar(@$dl_list) -1;
+            # 最後の更新日をcheck listに入れる。
+            $check_list[$i]->{update} = &timeepoc( $dl_list->[$num]->[2] );
+        }
+        else {
+            print STDERR encode($charcode, "No Update :: " . $title . "\n");
+        }
+        $base_path = undef;
+        $last_date = undef;
+        $update = undef;
+    }
+    close($save_file);
+    &save_list( $chklist, @check_list );
 }
 
 sub get_path {
-  my ($path, $name) = @_;
-  my $fullpath;
-  if ( -d $path ) {
-	  $fullpath = File::Spec->catfile($path, $name);
-	}
-	else {
-	  require File::Path;
-	  File::Path::make_path( $path );
-	  $fullpath = File::Spec->catfile($path, $name);
-	  print STDERR encode($charcode, "mkdir :: $fullpath\n");
-	}
-  return $fullpath;
+    my ($path, $name) = @_;
+    my $fullpath;
+    if ( -d $path ) {
+        $fullpath = File::Spec->catfile($path, $name);
+    }
+    else {
+        require File::Path;
+        File::Path::make_path( $path );
+        $fullpath = File::Spec->catfile($path, $name);
+        print STDERR encode($charcode, "mkdir :: $fullpath\n");
+    }
+    return $fullpath;
 }
 
 #main
 {
-  my $url;
-  &getopt;
+    my $url;
+    &getopt;
 
-  if ($chklist) {
-	unless ($savedir) {
-	  $savedir = Cwd::getcwd();
-	}
-#	print "$chklist\n";
-	@check_list = &load_list( $chklist );
-	&jyunkai_save;
-	exit 0;
-  }
-  
-  if ($update) {
-	if ($update =~ m|\d{2}\.\d{2}\.\d{2}| ) {
-	  $last_date = "20" . $update;
-	  $last_date = &epochtime( $last_date);
-	}
-	else {
-	  print STDERR encode($charcode,
-                          "YY.MM.DD の形式で入力してください\n"
-                         );
-	  exit 0;
-	}
-  }
+    if ($chklist) {
+        unless ($savedir) {
+            $savedir = Cwd::getcwd();
+        }
+        #	print "$chklist\n";
+        @check_list = &load_list( $chklist );
+        &jyunkai_save;
+        exit 0;
+    }
+
+    if ($update) {
+        if ($update =~ m|\d{2}\.\d{2}\.\d{2}| ) {
+            $last_date = "20" . $update;
+            $last_date = &epochtime( $last_date);
+        }
+        else {
+            print STDERR encode($charcode,
+                                "YY.MM.DD の形式で入力してください\n"
+                               );
+            exit 0;
+        }
+    }
 
   if (@ARGV == 1) {
-	if ($ARGV[0] =~ m|$url_prefix/novel/\d{8,9}/\d{8,9}/?$|) {
-	  $url = $ARGV[0];
-	  my $body = &get_contents( $url );
-	  my $list = &get_index( $body ); # 目次作成
-	  print encode($charcode, &header( $body ) );
-	  &get_all( $list );
-	}
-	elsif  ($ARGV[0] =~ m|$url_prefix.+/episode/|) {
-	  print STDERR encode($charcode,
-                          "個別ページダウンロード未対応\n"
-                         );
-	}
-	else {
-	  print STDERR encode($charcode,
-                          "URLの形式が、『" .
-                          "$url_prefix/novel/8〜9桁の数字/8〜9桁の数字" .
-                          "』\nと違います" . "\n"
-                         );
-	}
+      if ($ARGV[0] =~ m|$url_prefix/novel/\d{8,9}/\d{8,9}/?$|) {
+          $url = $ARGV[0];
+          my $body = &get_contents( $url );
+          my $list = &get_index( $body ); # 目次作成
+          print encode($charcode, &header( $body ) );
+          &get_all( $list );
+      }
+      elsif ($ARGV[0] =~ m|$url_prefix.+/episode/|) {
+          print STDERR encode($charcode,
+                              "個別ページダウンロード未対応\n"
+                             );
+      }
+      else {
+          print STDERR encode($charcode,
+                              "URLの形式が、『" .
+                              "$url_prefix/novel/8〜9桁の数字/8〜9桁の数字" .
+                              "』\nと違います" . "\n"
+                             );
+      }
   }
   else {
-	&help;
-	exit 0;
+      &help;
+      exit 0;
   }
 
   if ($show_help) {
-	&help;
-	exit 0;
+      &help;
+      exit 0;
   }
 }
