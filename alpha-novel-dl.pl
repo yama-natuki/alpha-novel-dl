@@ -93,7 +93,7 @@ sub get_index {
     $item = &html2tree($item);
     my $mokuji = $item->look_down('class', 'table-of-contents novels')
                       ->look_down('class', "episodes");
-    foreach my $tag ($mokuji->find('a')) {
+    foreach my $tag ($mokuji->look_down('class', "episode")) {
         my $url = $tag->find('a')->attr('href');            # url
         my $title = $tag->look_down('class', 'title')->as_text; # title
         utf8::decode($title);
