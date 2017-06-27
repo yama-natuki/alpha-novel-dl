@@ -92,7 +92,7 @@ sub get_index {
     my $count = 0;
     $item = &html2tree($item);
     my $mokuji = $item->look_down('class', 'table-of-contents novels')
-        ->look_down('class', "episodes");
+                      ->look_down('class', "episodes");
     foreach my $tag ($mokuji->find('a')) {
         my $url = $tag->find('a')->attr('href');            # url
         my $title = $tag->look_down('class', 'title')->as_text; # title
@@ -252,21 +252,15 @@ sub help {
 # YYYY.MM.DD -> epoch time.
 sub epochtime {
     my $item = shift;
-    my @index = split(/\./, $item);
-    my $day   = $index[2];
-    my $month = $index[1] -1;
-    my $year  = $index[0] -1900;
-    return timelocal(00, 00, 00, $day, $month, $year);
+    my ($year, $month, $day) = split(/\./, $item);
+    timelocal(0, 0, 0, $day, $month-1, $year-1900);
 }
 
+# epochtime -> YYYY.MM.DD
 sub timeepoc {
     my $item =shift;
-    my ($sec,$min,$hour,$mday,$month,$year,$wday,$yday,$isdst) = localtime($item);
-    $year = 1900 + $year;
-    $month++;
-    $month = sprintf("%02d", $month);
-    $mday = sprintf("%02d", $mday);
-    return "$year.$month.$mday";
+    my ($mday,$month,$year) = (localtime($item))[3,4,5];
+    sprintf("%4d.%02d.%02d", $year+1900, $month+1, $mday);
 }
 
 # リスト読み込み
