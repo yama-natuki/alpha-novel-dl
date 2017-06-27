@@ -61,7 +61,6 @@ my ($main_title, $author );
 my $chapter_title;
 my ($chklist, $savedir, $split_size, $update, $show_help );
 my $last_date;  #前回までの取得日
-my @check_list; #巡回リスト
 my $base_path;  #保存先dir
 my $charcode = 'UTF-8';
 
@@ -306,9 +305,9 @@ sub load_list {
 }
 
 sub save_list {
-  my($path, @list) = @_;
+  my($path, $list) = @_;
   open(STDOUT, ">:encoding($charcode)", $path);
-  foreach my $row (@list) {
+  foreach my $row (@$list) {
     print encode($charcode,
                  "title = " .     $row->{'title'} .     "\n" .
                  "file_name = " . $row->{'file_name'} . "\n" .
@@ -320,14 +319,15 @@ sub save_list {
 }
 
 sub jyunkai_save {
-    my $count = scalar(@check_list);
+    my $check_list = shift;
+    my $count = @$check_list;
     my $path;
     my $save_file;
     for (my $i = 0; $i < $count; $i++) {
-        my $fname = $check_list[$i]->{'file_name'};
-        my $url   = $check_list[$i]->{'url'};
-        my $title = $check_list[$i]->{'title'};
-        my $time  = $check_list[$i]->{'update'};
+        my $fname = $check_list->[$i]->{'file_name'};
+        my $url   = $check_list->[$i]->{'url'};
+        my $title = $check_list->[$i]->{'title'};
+        my $time  = $check_list->[$i]->{'update'};
         if ( defined($time) ) {
             $last_date = &epochtime( $time );
             $update = 1;
@@ -345,7 +345,7 @@ sub jyunkai_save {
             &get_all( $dl_list );
             my $num = scalar(@$dl_list) -1;
             # 最後の更新日をcheck listに入れる。
-            $check_list[$i]->{update} = &timeepoc( $dl_list->[$num]->[2] );
+            $check_list->[$i]->{update} = &timeepoc( $dl_list->[$num]->[2] );
         }
         else {
             print STDERR encode($charcode, "No Update :: " . $title . "\n");
@@ -355,7 +355,7 @@ sub jyunkai_save {
         $update = undef;
     }
     close($save_file);
-    &save_list( $chklist, @check_list );
+    &save_list( $chklist, $check_list );
 }
 
 sub get_path {
@@ -383,8 +383,8 @@ sub get_path {
             $savedir = Cwd::getcwd();
         }
         #	print "$chklist\n";
-        @check_list = &load_list( $chklist );
-        &jyunkai_save;
+        my @check_list = &load_list( $chklist );
+        &jyunkai_save( \@check_list );
         exit 0;
     }
 
