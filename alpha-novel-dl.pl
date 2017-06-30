@@ -39,6 +39,9 @@
 # 2017年06月27日(火曜日) 15:00:10 JST
 # レンタルにされた部分はスルーするようにした。
 # おかげでやる気減退。
+# 2017年06月30日(金曜日) 17:10:32 JST
+# テスト実行モードを実装。
+# --dry-run または -n オプションを付けると実際に書き込みはしないで実行する。
 #
 
 use strict;
@@ -59,7 +62,7 @@ my $separator = "▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲
 my $kaipage = "［＃改ページ］\n";
 my ($main_title, $author );
 my $chapter_title;
-my ($chklist, $savedir, $split_size, $update, $show_help );
+my ($dryrun, $chklist, $savedir, $split_size, $update, $show_help );
 my $last_date;  #前回までの取得日
 my $base_path;  #保存先dir
 my $charcode = 'UTF-8';
@@ -224,6 +227,7 @@ sub getopt() {
                "chklist|c=s" => \$chklist,
                "savedir|s=s" => \$savedir,
                "update|u=s"  => \$update,
+               "dryrun|n"    => \$dryrun,
                "help|h"      => \$show_help
               );
 }
@@ -245,6 +249,8 @@ sub help {
         "\t\t-u|--update\n".
         "\t\t\tYY.MM.DD形式の日付を与えると、その日付以降の\n".
         "\t\t\tデータだけをダウンロードする。\n".
+        "\t\t-n|--dry-run\n".
+        "\t\t\t実際には書き込まないで実行する。\n".
         "\t\t-h|--help\n".
         "\t\t\tこのテキストを表示する。\n"
       );
@@ -333,7 +339,17 @@ sub jyunkai_save {
             $update = 1;
         }
         $base_path = File::Spec->catfile( $savedir, $fname );
-        $save_file = &get_path($base_path, $fname) . ".txt";
+        if ($dryrun) {
+            if ($^O =~ m/MSWin32/) {
+                $save_file = "nul";
+            }
+            else {
+                $save_file = "/dev/null";
+            }
+        }
+        else {
+            $save_file = &get_path($base_path, $fname) . ".txt";
+        }
         open(STDOUT, ">>:encoding($charcode)", $save_file);
         my $body = &get_contents( $url );
         my $dl_list = &get_index( $body ); # 目次作成
@@ -355,7 +371,9 @@ sub jyunkai_save {
         $update = undef;
     }
     close($save_file);
-    &save_list( $chklist, $check_list );
+    unless ($dryrun) {
+        &save_list( $chklist, $check_list );
+    }
 }
 
 sub get_path {
