@@ -142,7 +142,7 @@ sub honbun {
     $chapter_title =~ s|\t||g;
     $chapter_title =~ s|\n||g;
     # 本文取得
-    $item =~  m|.*<div class="text ">(.+)</div>.+<a href="/Users/login.+|s;
+    $item =~  m|.*<div class="text " id="novelBoby">(.+)</div>.+<a href="/Users/login.+|s;
     $item =   $1;
     $item =~  s|<br />||g;
     $item =~  s|&nbsp;| |g;
