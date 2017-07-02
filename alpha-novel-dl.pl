@@ -227,7 +227,7 @@ sub getopt() {
                "chklist|c=s" => \$chklist,
                "savedir|s=s" => \$savedir,
                "update|u=s"  => \$update,
-               "dryrun|n"    => \$dryrun,
+               "dry-run|n"   => \$dryrun,
                "help|h"      => \$show_help
               );
 }
