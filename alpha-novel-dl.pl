@@ -325,63 +325,57 @@ sub save_list {
 }
 
 sub save_novel {
-    my ($title, $fname, $url, $time, $num) = @_;
+    my $book = shift;
     my $save_file;
-    if ( defined($time) ) {
-        $last_date = &epochtime( $time );
+
+    if ( defined( $$book->{'update'} ) ) {
+        $last_date = &epochtime( $$book->{'update'} );
         $update = 1;
     }
 
-    my $base_path = File::Spec->catfile( $savedir, $fname );
+    my $base_path = File::Spec->catfile( $savedir, $$book->{'file_name'} );
     if ($dryrun) {
         if ($^O =~ m/MSWin32/) { $save_file = "nul"; }
         else                   { $save_file = "/dev/null"; }
     }
     else {
-        $save_file = &get_path($base_path, $fname) . ".txt";
+        $save_file = &get_path($base_path, $$book->{'file_name'} ) . ".txt";
         }
 
     open(STDOUT, ">>:encoding($charcode)", $save_file);
-    my $body = &get_contents( $url );
+    my $body = &get_contents( $$book->{'url'} );
     my $dl_list = &get_index( $body ); # 目次作成
     if (@$dl_list) {
-        print STDERR encode($charcode, "START :: " . $title . "\n");
+        print STDERR encode($charcode, "START :: " . $$book->{'title'} . "\n");
         unless ($update) {
             print encode($charcode, &header( $body ) );
         }
         &get_all( $dl_list );
         my $num = scalar(@$dl_list) -1;
-        # 最後の更新日を戻す
-        return &timeepoc( $dl_list->[$num]->[2] );
+        # 最後の更新日
+        $$book->{'update'} = &timeepoc( $dl_list->[$num]->[2] );
     }
     else {
-        return undef;
+        print STDERR encode($charcode, "No Update :: " . $$book->{'title'} . "\n");
     }
     close($save_file);
 }
 
-sub jyunkai_save {
+# 巡回
+sub run_crawl {
     my $check_list = shift;
-    my $count = @$check_list;
+    my $i = 1;
 
-    for (my $i = 0; $i < $count; $i++) {
-        my $fname = $check_list->[$i]->{'file_name'};
-        my $url   = $check_list->[$i]->{'url'};
-        my $title = $check_list->[$i]->{'title'};
-        my $time  = $check_list->[$i]->{'update'};
-
-        my $last_time = &save_novel($title, $fname, $url, $time, $i);
-        if (defined($last_time)) {
-            $check_list->[$i]->{update} = $last_time;
-        }
-        else {
-            print STDERR encode($charcode, "No Update :: " . $title . "\n");
-        }
-    }
+    foreach my $item (@$check_list){
+        $item->{'key'} = $i;
+        $i++;
+        &save_novel( \$item );
+     }
 
     unless ($dryrun) {
         &save_list( $chklist, $check_list );
     }
+
 }
 
 sub get_path {
@@ -410,7 +404,7 @@ sub get_path {
         }
         #	print "$chklist\n";
         my @check_list = &load_list( $chklist );
-        &jyunkai_save( \@check_list );
+        &run_crawl(\@check_list);
         exit 0;
     }
 
