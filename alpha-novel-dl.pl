@@ -364,11 +364,8 @@ sub save_novel {
 # 巡回
 sub run_crawl {
     my $check_list = shift;
-    my $i = 1;
 
     foreach my $item (@$check_list){
-        $item->{'key'} = $i;
-        $i++;
         &save_novel( \$item );
      }
 
