@@ -42,6 +42,8 @@
 # 2017年06月30日(金曜日) 17:10:32 JST
 # テスト実行モードを実装。
 # --dry-run または -n オプションを付けると実際に書き込みはしないで実行する。
+# 2017年07月10日(月曜日) 11:37:49 JST
+# マルチスレッド導入。
 #
 
 use strict;
@@ -56,7 +58,6 @@ use Getopt::Long qw(:config posix_default no_ignore_case gnu_compat);
 use Cwd;
 use File::Spec;
 use threads;
-use threads::shared;
 use Thread::Queue;
 use Thread::Semaphore;
 
@@ -211,8 +212,12 @@ sub get_all {
               sub {
                   while (my $sec = $queue->dequeue ) {
                       my $text = &get_contents( $sec->[1] );
+                      $text = &honbun( $text );
+                      my $title = $sec->[0];
+                      my $time = &timeepoc( $sec->[2] );
+                      my $item = &honbun_formater( $text, $title );
                       $semaphore->up;
-                      return [ $sec->[0], $text, $sec->[2] ];
+                      return [ $title, $item, $time ];
                   }
               });
         push(@ring, $thread );
@@ -221,10 +226,9 @@ sub get_all {
 
     foreach my $x (@ring) {
         my ($ret) = $x->join;
-        my $text = &honbun( $ret->[1] );
         my $title = $ret->[0];
-        my $time = &timeepoc( $ret->[2] );
-        my $item = &honbun_formater( $text, $title );
+        my $item  = $ret->[1];
+        my $time  = $ret->[2];
         print STDERR encode($charcode, "success:: $time : $title \n");
         print encode($charcode, $item);
     }
