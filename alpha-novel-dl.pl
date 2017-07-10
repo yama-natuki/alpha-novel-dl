@@ -55,6 +55,10 @@ use Time::Local 'timelocal';
 use Getopt::Long qw(:config posix_default no_ignore_case gnu_compat);
 use Cwd;
 use File::Spec;
+use threads;
+use threads::shared;
+use Thread::Queue;
+use Thread::Semaphore;
 
 my $url_prefix = "https://www.alphapolis.co.jp";
 my $user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0';
@@ -65,6 +69,7 @@ my $chapter_title;
 my ($dryrun, $chklist, $savedir, $split_size, $update, $show_help );
 my $last_date;  #前回までの取得日
 my $base_path;  #保存先dir
+my $semaphore = Thread::Semaphore->new(8); #スレッド最大値。
 my $charcode = 'UTF-8';
 
 if ($^O =~ m/MSWin32/) {
@@ -192,16 +197,38 @@ sub get_pic {
 sub get_all {
     my $index = shift;
     my $count = scalar(@$index);
-    my $item;
-    for ( my $i = 0; $i < $count; $i++) {
-        my $text = &get_contents( scalar(@$index[$i]->[1]) );
-        $text = &honbun( $text );
-        my $title = scalar(@$index[$i]->[0]);
-        my $time = &timeepoc( scalar(@$index[$i]->[2]) );
-        $item = &honbun_formater( $text, $title );
+    my @ring;
+    my $queue = new Thread::Queue;
+
+    # キュー追加
+    foreach (@$index){
+        $queue->enqueue($_);
+    }
+
+    foreach (1..$count) {
+        $semaphore->down;
+         my $thread = threads->create(
+              sub {
+                  while (my $sec = $queue->dequeue ) {
+                      my $text = &get_contents( $sec->[1] );
+                      $semaphore->up;
+                      return [ $sec->[0], $text, $sec->[2] ];
+                  }
+              });
+        push(@ring, $thread );
+        $queue->enqueue(undef);
+    }
+
+    foreach my $x (@ring) {
+        my ($ret) = $x->join;
+        my $text = &honbun( $ret->[1] );
+        my $title = $ret->[0];
+        my $time = &timeepoc( $ret->[2] );
+        my $item = &honbun_formater( $text, $title );
         print STDERR encode($charcode, "success:: $time : $title \n");
         print encode($charcode, $item);
     }
+
 }
 
 sub honbun_formater  {
