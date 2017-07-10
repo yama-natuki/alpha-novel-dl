@@ -184,10 +184,10 @@ sub get_pic {
     $http->agent($user_agent);
     my $res = $http->get( $address, ':content_file' => $fname );
     if ( $res->is_success ) {
-        print STDERR encode($charcode, "success:: $fname\n");
+        print STDERR encode($charcode, "\033[1G\033[0Ksave:: $fname\n");
     }
     else {
-        print STDERR encode($charcode, "error:: $fname\n");
+        print STDERR encode($charcode, "\033[1G\033[0Kerror:: $fname\n");
     }
     # 挿絵リンク処理
     return "［＃挿絵" .
