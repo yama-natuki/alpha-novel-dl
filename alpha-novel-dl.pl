@@ -60,6 +60,7 @@ use File::Spec;
 use threads;
 use Thread::Queue;
 use Thread::Semaphore;
+use Term::ProgressBar;
 
 my $url_prefix = "https://www.alphapolis.co.jp";
 my $user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0';
@@ -206,7 +207,10 @@ sub get_all {
         $queue->enqueue($_);
     }
 
+    my $prog = Term::ProgressBar->new( {count => $count, name => "Download"} );
+
     foreach (1..$count) {
+        $prog->update($_);
         $semaphore->down;
          my $thread = threads->create(
               sub {
