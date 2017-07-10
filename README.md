@@ -14,6 +14,7 @@ alpha-novel-dl.pl
 - cp932対応
 - 追加分取得機能
 - 巡回機能
+- マルチスレッド
 
 # 導入方法
 
@@ -22,8 +23,12 @@ alpha-novel-dl.pl
 ```
     LWP::UserAgent
     HTML::TreeBuilder
-    File::Basename
+    Term::ProgressBar
 ```
+
+Debain系
+
+`    sudo apt-get install git libwww-perl libhtml-treebuilder-libxml-perl libterm-progressbar-perl ` 
 
 ## インストール
 
@@ -52,6 +57,12 @@ alpha-novel-dl.pl
 とする。
 
 　次回以降は保存した後に追加された部分だけダウンロードする。
+
+## 具体的な使い方
+
+　crontabやタスクスケジューラに一日一回実行で登録し、保存先ディレクトリをクラウドストレージにしておく。  
+　あとはクラウドストレージをスマホやタブレットと共有しておけば、
+自動的に毎日更新されてスマホの縦書きビューワで読めておいしい。
 
 ## 巡回リスト
 
