@@ -368,7 +368,7 @@ sub save_novel {
         $update = 1;
     }
 
-    my $base_path = File::Spec->catfile( $savedir, $$book->{'file_name'} );
+    $base_path = File::Spec->catfile( $savedir, $$book->{'file_name'} );
     if ($dryrun) {
         if ($^O =~ m/MSWin32/) { $save_file = "nul"; }
         else                   { $save_file = "/dev/null"; }
