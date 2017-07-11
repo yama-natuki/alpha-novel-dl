@@ -174,21 +174,26 @@ sub honbun {
 sub get_pic {
     my $address = shift;
     my $fname = basename( $address );
+
     unless ( defined($base_path) ) {
         $fname = basename( $address );
     }
     else {
         $fname = &get_path($base_path, $fname);
     }
-    my $http = LWP::UserAgent->new;
-    $http->agent($user_agent);
-    my $res = $http->get( $address, ':content_file' => $fname );
-    if ( $res->is_success ) {
-        print STDERR encode($charcode, "\033[1G\033[0Ksave:: $fname\n");
+
+    unless ( $dryrun ) {
+        my $http = LWP::UserAgent->new;
+        $http->agent($user_agent);
+        my $res = $http->get( $address, ':content_file' => $fname );
+        if ( $res->is_success ) {
+            print STDERR encode($charcode, "\033[1G\033[0Ksave:: $fname\n");
+        }
+        else {
+            print STDERR encode($charcode, "\033[1G\033[0Kerror:: $fname\n");
+        }
     }
-    else {
-        print STDERR encode($charcode, "\033[1G\033[0Kerror:: $fname\n");
-    }
+
     # 挿絵リンク処理
     return "［＃挿絵" .
         "（" .
