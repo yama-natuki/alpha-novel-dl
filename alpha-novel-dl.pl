@@ -342,7 +342,7 @@ sub load_list {
             }
         }
         if ($hash{'title'}) {
-            $list[$i] = {%hash}; # ハッシュを配列に格納
+            push(@list, {%hash}); # ハッシュを配列に格納
         }
         undef %hash;
     }
