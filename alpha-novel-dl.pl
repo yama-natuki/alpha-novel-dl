@@ -372,6 +372,9 @@ sub save_novel {
         $last_date = &epochtime( $$book->{'update'} );
         $update = 1;
     }
+    else {
+        $update = 0;
+    }
 
     $base_path = File::Spec->catfile( $savedir, $$book->{'file_name'} );
     if ($dryrun) {
