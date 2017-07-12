@@ -32,7 +32,7 @@ Debain系
 
 ## インストール
 
-`  git clone  https://github.com/yama-natuki/alphapolis2aozora.git `
+`  git clone  https://github.com/yama-natuki/alpha-novel-dl.git `
 
 # 使い方
 
@@ -50,7 +50,7 @@ Debain系
 
 　保存先は指定ディレクト以下にサブディレクトリを自動的に作成して個別に保存される。
 
-　例えば巡回リスト __alpha.lst__ で、保存先ベースディレクトリを __~/book__ 以下に保存したい場合、
+　例えば巡回リスト **alpha.lst** で、保存先ベースディレクトリを **~/book** 以下に保存したい場合、
 
 `    ./alpha-novel-dl.pl -c alpha.lst -s ~/book `
 
