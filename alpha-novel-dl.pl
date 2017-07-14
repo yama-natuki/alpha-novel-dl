@@ -223,7 +223,7 @@ sub get_all {
                       my $text = &get_contents( $sec->[1] );
                       $text = &honbun( $text );
                       my $title = $sec->[0];
-                      my $time = &timeepoc( $sec->[2] );
+                      my $time = &timeepoch( $sec->[2] );
                       my $item = &honbun_formater( $text, $title );
                       $semaphore->up;
                       return [ $title, $item, $time ];
@@ -305,7 +305,7 @@ sub epochtime {
 }
 
 # epochtime -> YYYY.MM.DD
-sub timeepoc {
+sub timeepoch {
     my $item =shift;
     my ($mday,$month,$year) = (localtime($item))[3,4,5];
     sprintf("%4d.%02d.%02d", $year+1900, $month+1, $mday);
@@ -396,7 +396,7 @@ sub save_novel {
         &get_all( $dl_list );
         my $num = scalar(@$dl_list) -1;
         # 最後の更新日
-        $$book->{'update'} = &timeepoc( $dl_list->[$num]->[2] );
+        $$book->{'update'} = &timeepoch( $dl_list->[$num]->[2] );
     }
     else {
         print STDERR encode($charcode, "No Update :: " . $$book->{'title'} . "\n");
